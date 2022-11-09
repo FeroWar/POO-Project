@@ -2,7 +2,6 @@ package pt.iscte.poo.example;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import pt.iscte.poo.gui.ImageMatrixGUI;
 import pt.iscte.poo.gui.ImageTile;
 import pt.iscte.poo.observer.Observed;
@@ -12,6 +11,7 @@ import java.awt.event.KeyEvent;
 
 
 public class EngineExample implements Observer {
+
 	public static final int GRID_HEIGHT = 10;
 	public static final int GRID_WIDTH = 10;
 	
@@ -24,7 +24,6 @@ public class EngineExample implements Observer {
 	private Thug thug;
 	private Wall wall;
 	private List<GameElement> entities;
-	private List<ObjectHealth> enemies;
 	private int turns;
 	
 	public static EngineExample getInstance() {
@@ -69,67 +68,149 @@ public class EngineExample implements Observer {
 	}
 	
 	private void addHero(Point2D position) {
-		hero = new Hero(position,0,enemies.size(),10,1);
-		enemies.add(enemies.size(),hero);
+		hero = new Hero(position);
 		entities.add(entities.size(),hero);
 		gui.addImage(hero);
 	}
 	private void addWall(Point2D position) {
-		wall=new Wall(position,0);
+		wall=new Wall(position);
 		entities.add(entities.size(),wall);
 		gui.addImage(wall);
 	}
 	private void addSkeleton(Point2D position){
-		skeleton = new Skeleton(position,0,enemies.size(),10,1);
-		enemies.add(enemies.size(),skeleton);
+		skeleton = new Skeleton(position);
 		entities.add(entities.size(),skeleton);
 		gui.addImage(skeleton);
 	}
 	private void addBat(Point2D position) {
-		bat = new Bat(position,0,enemies.size(),10,1);
-		enemies.add(enemies.size(),bat);
+		bat = new Bat(position);
 		entities.add(entities.size(),bat);
 		gui.addImage(bat);
 	}
 	private void addThug(Point2D position) {
-		thug = new Thug(position,0,enemies.size(),10,1);
-		enemies.add(enemies.size(),thug);
+		thug = new Thug(position);
 		entities.add(entities.size(),thug);
 		gui.addImage(thug);
 	}
 	
 	private void charactersUpdate (int turns) {
-		skeleton.move(hero.getPosition(),entities);
-		bat.move(hero.getPosition(),entities);
-		thug.move(hero.getPosition(),entities);
+		for(int i=0;i!=entities.size();i++){
+			if(turns%2==0) {
+				if(entities.get(i) instanceof Skeleton) {
+					Skeleton skel=(Skeleton)entities.get(i);
+					Point2D pos=skel.move(hero.getPosition());
+					int index=collision(pos);
+					if(index==-1) {
+						skel.changePosition(pos);
+						entities.remove(i);
+						entities.add(i,skel);
+					}else {
+						GameElement hero=skel.attack(entities.get(index));
+						entities.remove(index);
+						entities.add(index,hero);
+					}
+				}
+			}
+			if(entities.get(i) instanceof Bat) {
+				Bat bat=(Bat)entities.get(i);
+				Point2D pos=bat.move(hero.getPosition());
+				int index=collision(pos);
+				if(index==-1) {
+					bat.changePosition(pos);
+					entities.remove(i);
+					entities.add(i,bat);
+				}else {
+					GameElement hero=bat.attack(entities.get(index));
+					entities.remove(index);
+					entities.add(index,hero);
+				}
+			}
+			if(entities.get(i) instanceof Thug) {
+				Thug thug=(Thug)entities.get(i);
+				Point2D pos=thug.move(hero.getPosition());
+				int index=collision(pos);
+				if(index==-1) {
+					thug.changePosition(pos);
+					entities.remove(i);
+					entities.add(i,thug);
+				}else {
+					GameElement hero=thug.attack(entities.get(index));
+					entities.remove(index);
+					entities.add(index,hero);
+				}
+			}
+			}
 	}
-	
 	@Override
 	public void update(Observed source) {
 		
 		int key = ((ImageMatrixGUI) source).keyPressed();
 		
-		if (key == KeyEvent.VK_DOWN) {		
-			hero.keyCode(key,entities,enemies);
+		if (key == KeyEvent.VK_DOWN) {
+			Point2D pos=hero.keyCode(key);
+			int index=collision(pos);
+			if(index==-1) {
+				hero.changePosition(pos);
+			}else {
+				GameElement enemy=hero.attack(entities.get(index));
+				entities.remove(index);
+				entities.add(index,enemy);
+			}
 			charactersUpdate(turns);
 			turns++;
 		}
-		if (key == KeyEvent.VK_UP) {		
-			hero.keyCode(key,entities,enemies);
+		if (key == KeyEvent.VK_UP) {	
+			Point2D pos=hero.keyCode(key);
+			int index=collision(pos);
+			if(index==-1) {
+				hero.changePosition(pos);
+			}else {
+				GameElement enemy=hero.attack(entities.get(index));
+				entities.remove(index);
+				entities.add(index,enemy);
+			}
 			charactersUpdate(turns);
 			turns++;
 		}
-		if (key == KeyEvent.VK_LEFT) {		
-			hero.keyCode(key,entities,enemies);
+		if (key == KeyEvent.VK_LEFT) {
+			Point2D pos=hero.keyCode(key);
+			int index=collision(pos);
+			if(index==-1) {
+				hero.changePosition(pos);
+			}else {
+				GameElement enemy=hero.attack(entities.get(index));
+				entities.remove(index);
+				entities.add(index,enemy);
+			}
 			charactersUpdate(turns);
 			turns++;
 		}
-		if (key == KeyEvent.VK_RIGHT) {		
-			hero.keyCode(key,entities,enemies);
+		if (key == KeyEvent.VK_RIGHT) {
+			Point2D pos=hero.keyCode(key);
+			int index=collision(pos);
+			if(index==-1) {
+				hero.changePosition(pos);
+			}else {
+				GameElement enemy=hero.attack(entities.get(index));
+				entities.remove(index);
+				entities.add(index,enemy);
+			}
 			charactersUpdate(turns);
 			turns++;
 		}
-		gui.setStatusMessage("ROGUE Starter Package - Turns:" + turns);
+		Hero hero=(Hero)entities.get(0);
+		Skeleton skel=(Skeleton)entities.get(1);
+		Bat bat=(Bat)entities.get(2);
+		Thug thug=(Thug)entities.get(3);
+		gui.setStatusMessage("ROGUE Starter Package - Turns:" + turns + "Hero:" +  hero.getHealth()+ "Skel:" +  skel.getHealth()+ "bat:" +  bat.getHealth()+ "thug:" +  thug.getHealth());
 		gui.update();
 	}
+	public int collision(Point2D position) {
+	for(int i=0;i!=entities.size();i++){
+		if(position.equals(entities.get(i).getGamePosition())) {
+			return i;
+		}
+	}
+	return -1;	
+}
 }

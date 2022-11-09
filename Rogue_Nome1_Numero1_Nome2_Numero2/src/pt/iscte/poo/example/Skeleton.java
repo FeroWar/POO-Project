@@ -1,13 +1,21 @@
 package pt.iscte.poo.example;
 
 import java.util.List;
+
 import pt.iscte.poo.gui.ImageTile;
 import pt.iscte.poo.utils.Point2D;
 import pt.iscte.poo.utils.Vector2D;
-public class Skeleton extends ObjectHealth implements ImageTile,Movable {
+public class Skeleton extends GameElement implements ImageTile,Movable,Attackable {
 
-	public Skeleton(Point2D position,int l,int objHID, int hp,int dmg) {
-		super(position,l,objHID,hp,dmg);
+	private int health;
+	private int damage;
+	private int armor;
+
+	public Skeleton(Point2D position) {
+		super(position);
+		this.health=5;
+		this.damage=1;
+		this.armor=0;
 	}
 
 	@Override
@@ -22,24 +30,37 @@ public class Skeleton extends ObjectHealth implements ImageTile,Movable {
 
 	@Override
 	public int getLayer() {
-		return 0;
+		return 2;
 	}
 	
-	public void move(Point2D endPosition,List<GameElement> array){
+	public Point2D move(Point2D endPosition){
 		Vector2D Vector = Vector2D.movementVector(getPosition(),endPosition);
-		if(isWithinBounds(getPosition().plus(Vector)) && colission(array,getPosition().plus(Vector))) {
-			changePosition(getPosition().plus(Vector));}
+			return getPosition().plus(Vector);
 	}
 	
 	static public boolean isWithinBounds(Point2D position) {
 		return position.getX() >=0 && position.getY() >= 0 &&  position.getX() < 10 &&  position.getY() < 10; 
 	}
-	public boolean colission(List<GameElement> array, Point2D position) {
-		for(int i=0;i!=array.size();i++){
-			if(position.equals(array.get(i).getGamePosition())) {
-				return false;
-			}
+	@Override
+	public void getHit(int damage) {
+		this.health-=damage;
+	}
+	@Override
+	public GameElement attack(GameElement enemy) {
+		if(enemy instanceof Hero) {
+			Hero hero=(Hero)enemy;
+			hero.getHit(this.damage);
+			GameElement exit=hero;
+			return exit;
 		}
-		return true;	
+		return enemy;
+	}
+	@Override
+	public int getHealth() {
+		return this.health;
+	}
+	@Override
+	public int getDamage() {
+		return this.damage;
 	}
 }

@@ -10,8 +10,8 @@ import pt.iscte.poo.utils.Vector2D;
 
 public class Wall extends GameElement implements ImageTile {
 
-	public Wall(Point2D position,int l) {
-		super(position,l);
+	public Wall(Point2D position) {
+		super(position);
 	}
 
 	@Override

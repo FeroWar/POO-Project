@@ -6,15 +6,10 @@ import pt.iscte.poo.utils.Point2D;
 public abstract class GameElement {
 	private Point2D position;
 	private int layer;
-	private int ObjectHealthID;
 	
-	public GameElement(Point2D position,int l,int objHID) {
+	public GameElement(Point2D position) {
 		this.position = position;
-		this.layer = l;
-		this.ObjectHealthID=objHID;
-	}
-	public int getObjectHealthID() {
-		return this.ObjectHealthID;
+		this.layer = 0;
 	}
 	
 	public Point2D getGamePosition() {

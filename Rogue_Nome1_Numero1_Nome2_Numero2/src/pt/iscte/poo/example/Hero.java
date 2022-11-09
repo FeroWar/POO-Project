@@ -1,15 +1,24 @@
 package pt.iscte.poo.example;
 
+import java.util.ArrayList;
 import java.util.List;
+
 import pt.iscte.poo.gui.ImageTile;
 import pt.iscte.poo.utils.Direction;
 import pt.iscte.poo.utils.Point2D;
 import pt.iscte.poo.utils.Vector2D;
 
-public class Hero extends ObjectHealth implements ImageTile,Movable {
+public class Hero extends GameElement implements ImageTile,Movable,Attackable {
 
-	public Hero(Point2D position,int l,int objHID, int hp,int dmg) {
-		super(position,l,objHID,hp,dmg);
+	private int health;
+	private int damage;
+	private int armor;
+
+	public Hero(Point2D position) {
+		super(position);
+		this.health=10;
+		this.damage=1;
+		this.armor=0;
 	}
 
 	@Override
@@ -24,33 +33,49 @@ public class Hero extends ObjectHealth implements ImageTile,Movable {
 
 	@Override
 	public int getLayer() {
-		return 0;
+		return 2;
 	}
 	
-	public void keyCode(int keycode,List<GameElement> array,List<ObjectHealth> arrays) {
+	public Point2D keyCode(int keycode) {
 		Direction Direction1 = Direction.directionFor(keycode);
 		Vector2D Vector = Direction1.asVector();
-		if(isWithinBounds(getPosition().plus(Vector))) {
-		move(getPosition().plus(Vector),array);}
+		return getPosition().plus(Vector);
 	}
-	public void move(Point2D endPosition,List<GameElement> array){
-		Vector2D Vector = Vector2D.movementVector(getPosition(),endPosition);
-		if(isWithinBounds(getPosition().plus(Vector)) && colission(array,getPosition().plus(Vector))) {
-			changePosition(getPosition().plus(Vector));}
+	public Point2D move(Point2D endPosition){
+			return endPosition;
 	}
-	
-	static public boolean isWithinBounds(Point2D position) {
-		return position.getX() >=0 && position.getY() >= 0 &&  position.getX() < 10 &&  position.getY() < 10; 
+	@Override
+	public void getHit(int damage) {
+		this.health-=damage;
 	}
-	public boolean colission(List<GameElement> array, Point2D position) {
-		for(int i=0;i!=array.size();i++){
-			if(position.equals(array.get(i).getGamePosition())) {
-				if(array.get(i).getLayer()==2) {
-				array.get(i).getHit(this.damage);
-				}
-				return false;
-			}
+	@Override
+	public GameElement attack(GameElement enemy) {
+		if(enemy instanceof Skeleton) {
+			Skeleton Skel=(Skeleton)enemy;
+			Skel.getHit(this.damage);
+			GameElement exit=Skel;
+			return exit;
 		}
-		return true;	
+		if(enemy instanceof Bat) {
+			Bat bat=(Bat)enemy;
+			bat.getHit(this.damage);
+			GameElement exit=bat;
+			return exit;
+		}
+		if(enemy instanceof Thug) {
+			Thug thug=(Thug)enemy;
+			thug.getHit(this.damage);
+			GameElement exit=thug;
+			return exit;
+		}
+		return enemy;
+	}
+	@Override
+	public int getHealth() {
+		return this.health;
+	}
+	@Override
+	public int getDamage() {
+		return this.damage;
 	}
 }
