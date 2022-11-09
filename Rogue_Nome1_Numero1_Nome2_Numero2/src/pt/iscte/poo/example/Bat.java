@@ -1,17 +1,14 @@
 package pt.iscte.poo.example;
 
 import java.util.List;
-
 import pt.iscte.poo.gui.ImageTile;
-import pt.iscte.poo.utils.Direction;
 import pt.iscte.poo.utils.Point2D;
 import pt.iscte.poo.utils.Vector2D;
-public class Bat extends GameElement implements ImageTile,Movable {
+public class Bat extends ObjectHealth implements ImageTile,Movable {
 
-	private int health;
 
-	public Bat(Point2D position,int l) {
-		super(position,l);
+	public Bat(Point2D position,int l,int objHID, int hp,int dmg) {
+		super(position,l,objHID,hp,dmg);
 	}
 
 	@Override
@@ -45,9 +42,5 @@ public class Bat extends GameElement implements ImageTile,Movable {
 			}
 		}
 		return true;	
-	}
-	
-	public void getHit(int damage) {
-		this.health-=damage;
 	}
 }

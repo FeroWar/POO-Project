@@ -1,19 +1,15 @@
 package pt.iscte.poo.example;
 
-import java.util.ArrayList;
 import java.util.List;
-
 import pt.iscte.poo.gui.ImageTile;
 import pt.iscte.poo.utils.Direction;
 import pt.iscte.poo.utils.Point2D;
 import pt.iscte.poo.utils.Vector2D;
 
-public class Hero extends GameElement implements ImageTile,Movable {
+public class Hero extends ObjectHealth implements ImageTile,Movable {
 
-	private int health;
-
-	public Hero(Point2D position,int l) {
-		super(position,l);
+	public Hero(Point2D position,int l,int objHID, int hp,int dmg) {
+		super(position,l,objHID,hp,dmg);
 	}
 
 	@Override
@@ -31,7 +27,7 @@ public class Hero extends GameElement implements ImageTile,Movable {
 		return 0;
 	}
 	
-	public void keyCode(int keycode,List<GameElement> array) {
+	public void keyCode(int keycode,List<GameElement> array,List<ObjectHealth> arrays) {
 		Direction Direction1 = Direction.directionFor(keycode);
 		Vector2D Vector = Direction1.asVector();
 		if(isWithinBounds(getPosition().plus(Vector))) {
@@ -49,13 +45,12 @@ public class Hero extends GameElement implements ImageTile,Movable {
 	public boolean colission(List<GameElement> array, Point2D position) {
 		for(int i=0;i!=array.size();i++){
 			if(position.equals(array.get(i).getGamePosition())) {
+				if(array.get(i).getLayer()==2) {
+				array.get(i).getHit(this.damage);
+				}
 				return false;
 			}
 		}
 		return true;	
-	}
-	
-	public void getHit(int damage) {
-		this.health-=damage;
 	}
 }

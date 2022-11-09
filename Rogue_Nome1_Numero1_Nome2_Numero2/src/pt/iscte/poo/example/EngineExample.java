@@ -12,7 +12,6 @@ import java.awt.event.KeyEvent;
 
 
 public class EngineExample implements Observer {
-
 	public static final int GRID_HEIGHT = 10;
 	public static final int GRID_WIDTH = 10;
 	
@@ -25,6 +24,7 @@ public class EngineExample implements Observer {
 	private Thug thug;
 	private Wall wall;
 	private List<GameElement> entities;
+	private List<ObjectHealth> enemies;
 	private int turns;
 	
 	public static EngineExample getInstance() {
@@ -69,7 +69,8 @@ public class EngineExample implements Observer {
 	}
 	
 	private void addHero(Point2D position) {
-		hero = new Hero(position,0);
+		hero = new Hero(position,0,enemies.size(),10,1);
+		enemies.add(enemies.size(),hero);
 		entities.add(entities.size(),hero);
 		gui.addImage(hero);
 	}
@@ -79,17 +80,20 @@ public class EngineExample implements Observer {
 		gui.addImage(wall);
 	}
 	private void addSkeleton(Point2D position){
-		skeleton = new Skeleton(position,0);
+		skeleton = new Skeleton(position,0,enemies.size(),10,1);
+		enemies.add(enemies.size(),skeleton);
 		entities.add(entities.size(),skeleton);
 		gui.addImage(skeleton);
 	}
 	private void addBat(Point2D position) {
-		bat = new Bat(position,0);
+		bat = new Bat(position,0,enemies.size(),10,1);
+		enemies.add(enemies.size(),bat);
 		entities.add(entities.size(),bat);
 		gui.addImage(bat);
 	}
 	private void addThug(Point2D position) {
-		thug = new Thug(position,0);
+		thug = new Thug(position,0,enemies.size(),10,1);
+		enemies.add(enemies.size(),thug);
 		entities.add(entities.size(),thug);
 		gui.addImage(thug);
 	}
@@ -106,22 +110,22 @@ public class EngineExample implements Observer {
 		int key = ((ImageMatrixGUI) source).keyPressed();
 		
 		if (key == KeyEvent.VK_DOWN) {		
-			hero.keyCode(key,entities);
+			hero.keyCode(key,entities,enemies);
 			charactersUpdate(turns);
 			turns++;
 		}
 		if (key == KeyEvent.VK_UP) {		
-			hero.keyCode(key,entities);
+			hero.keyCode(key,entities,enemies);
 			charactersUpdate(turns);
 			turns++;
 		}
 		if (key == KeyEvent.VK_LEFT) {		
-			hero.keyCode(key,entities);
+			hero.keyCode(key,entities,enemies);
 			charactersUpdate(turns);
 			turns++;
 		}
 		if (key == KeyEvent.VK_RIGHT) {		
-			hero.keyCode(key,entities);
+			hero.keyCode(key,entities,enemies);
 			charactersUpdate(turns);
 			turns++;
 		}
