@@ -92,7 +92,7 @@ public class EngineExample implements Observer {
 		entities.add(entities.size(),thug);
 		gui.addImage(thug);
 	}
-	
+
 	private void charactersUpdate (int turns) {
 		for(int i=0;i!=entities.size();i++){
 			if(turns%2==0) {
@@ -106,8 +106,15 @@ public class EngineExample implements Observer {
 						entities.add(i,skel);
 					}else {
 						GameElement hero=skel.attack(entities.get(index));
+//						if(hero instanceof Hero) {
+//							Hero heroi=(Hero) hero;
+//						if(heroi.getHealth()>0) {
 						entities.remove(index);
 						entities.add(index,hero);
+//						}else {
+//							entities.remove(index);
+//						}
+//						}
 					}
 				}
 			}
@@ -121,8 +128,15 @@ public class EngineExample implements Observer {
 					entities.add(i,bat);
 				}else {
 					GameElement hero=bat.attack(entities.get(index));
+//					if(hero instanceof Hero) {
+//						Hero heroi=(Hero) hero;
+//					if(heroi.getHealth()>0) {
 					entities.remove(index);
 					entities.add(index,hero);
+//					}else {
+//						entities.remove(index);
+//					}
+//					}
 				}
 			}
 			if(entities.get(i) instanceof Thug) {
@@ -135,8 +149,15 @@ public class EngineExample implements Observer {
 					entities.add(i,thug);
 				}else {
 					GameElement hero=thug.attack(entities.get(index));
+//					if(hero instanceof Hero) {
+//						Hero heroi=(Hero) hero;
+//					if(heroi.getHealth()>0) {
 					entities.remove(index);
 					entities.add(index,hero);
+//					}else {
+//						entities.remove(index);
+//					}
+//					}
 				}
 			}
 			}
@@ -153,8 +174,15 @@ public class EngineExample implements Observer {
 				hero.changePosition(pos);
 			}else {
 				GameElement enemy=hero.attack(entities.get(index));
-				entities.remove(index);
-				entities.add(index,enemy);
+//				if(enemy instanceof Enemy) {
+//				Enemy ene=(Enemy) enemy;
+//			if(ene.getHealth()>0) {
+			entities.remove(index);
+			entities.add(index,enemy);
+//			}else {
+//				entities.remove(index);
+//			}
+//			}
 			}
 			charactersUpdate(turns);
 			turns++;
@@ -166,8 +194,15 @@ public class EngineExample implements Observer {
 				hero.changePosition(pos);
 			}else {
 				GameElement enemy=hero.attack(entities.get(index));
-				entities.remove(index);
-				entities.add(index,enemy);
+//				if(enemy instanceof Enemy) {
+//				Enemy ene=(Enemy) enemy;
+//			if(ene.getHealth()>0) {
+			entities.remove(index);
+			entities.add(index,enemy);
+//			}else {
+//				entities.remove(index);
+//			}
+//			}
 			}
 			charactersUpdate(turns);
 			turns++;
@@ -179,8 +214,15 @@ public class EngineExample implements Observer {
 				hero.changePosition(pos);
 			}else {
 				GameElement enemy=hero.attack(entities.get(index));
-				entities.remove(index);
-				entities.add(index,enemy);
+//				if(enemy instanceof Enemy) {
+//				Enemy ene=(Enemy) enemy;
+//			if(ene.getHealth()>0) {
+			entities.remove(index);
+			entities.add(index,enemy);
+//			}else {
+//				entities.remove(index);
+//			}
+//			}
 			}
 			charactersUpdate(turns);
 			turns++;
@@ -192,17 +234,21 @@ public class EngineExample implements Observer {
 				hero.changePosition(pos);
 			}else {
 				GameElement enemy=hero.attack(entities.get(index));
-				entities.remove(index);
-				entities.add(index,enemy);
+//				if(enemy instanceof Enemy) {
+//				Enemy ene=(Enemy) enemy;
+//			if(ene.getHealth()>0) {
+			entities.remove(index);
+			entities.add(index,enemy);
+//			}else {
+//				entities.remove(index);
+//			}
+//			}
 			}
 			charactersUpdate(turns);
 			turns++;
 		}
 		Hero hero=(Hero)entities.get(0);
-		Skeleton skel=(Skeleton)entities.get(1);
-		Bat bat=(Bat)entities.get(2);
-		Thug thug=(Thug)entities.get(3);
-		gui.setStatusMessage("ROGUE Starter Package - Turns:" + turns + "Hero:" +  hero.getHealth()+ "Skel:" +  skel.getHealth()+ "bat:" +  bat.getHealth()+ "thug:" +  thug.getHealth());
+		gui.setStatusMessage("ROGUE Starter Package - Turns:" + turns + "Hero:" +  hero.getHealth());
 		gui.update();
 	}
 	public int collision(Point2D position) {
