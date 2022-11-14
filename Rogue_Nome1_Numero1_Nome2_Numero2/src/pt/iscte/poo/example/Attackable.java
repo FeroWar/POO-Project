@@ -5,6 +5,6 @@ public interface Attackable {
 	GameElement attack(GameElement enemy);
 	int getHealth();
 	int getDamage();
-	
-
+	void changeHealth(int hp);
+	void changeDamage(int dmg);
 }
