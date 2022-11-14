@@ -142,9 +142,13 @@ public class EngineExample implements Observer {
 				}
 			}
 		}
-		System.out.println("Healthupdate");
 		healthUpdate();
-		System.out.println("HealthupdateDone");
+		Hero hero = (Hero) entities.get(0);
+		if(hero.getHealth()<=0) {
+			gui.setMessage("You're bad at the game!");
+//			gui.removeImage((Hero)entities.get(0));
+//			entities.remove(0);
+		}
 	}
 
 	public int getTurn() {
@@ -214,34 +218,27 @@ public class EngineExample implements Observer {
 	}
 	
 	public void healthUpdate() {
-//		List<Point2D> positions=new ArrayList<Point2D>();
-//		for(int i=0;i!=5;i++) {
-//		positions.add(new Point2D(i,10));
-//		}
 		for (int i = 1; i != entities.size(); i++) {;
-		System.out.println("InsideHealthupdate"+"i");
 			if(entities.get(i) instanceof GameHud) {
+				System.out.println("InsideHealthupdate"+i);
 				Point2D pos=entities.get(i).getGamePosition();
-//				gui.removeImage((GameHud)entities.get(i));
-//				entities.remove(i);
-//				GameHud green=new GameHud(pos,"RedGreen");
-//				entities.add(i,green);
-//				gui.addImage(green);
 				
 				Hero hero = (Hero) entities.get(0);
-				if((hero.getHealth()%2)==1) {
-					if(pos.equals(new Point2D(hero.getHealth()/2,10))) {
-						System.out.println("Half"+"i");
+				int health=hero.getHealth();
+				for(int j=5;j>=(health/2);j--) {
+					System.out.println("Green1"+"i");
+					if(pos.equals(new Point2D(4-j,10))) {
+						System.out.println("Green"+"i");
 						gui.removeImage((GameHud)entities.get(i));
 						entities.remove(i);
-						GameHud half=new GameHud(pos,"RedGreen");
-						entities.add(i,half);
-						gui.addImage(half);
+						GameHud red=new GameHud(pos,"Red");
+						entities.add(i,red);
+						gui.addImage(red);
 					}
 				}
-				for(int j=4;j<=(hero.getHealth()/2);j--) {
-					if(pos.equals(new Point2D(j,10))) {
-						System.out.println("Green"+"i");
+				for(int j=0;j<(health/2);j++) {
+					if(pos.equals(new Point2D(4-j,10))) {
+						System.out.println("Red"+"i");
 						gui.removeImage((GameHud)entities.get(i));
 						entities.remove(i);
 						GameHud green=new GameHud(pos,"Green");
@@ -249,14 +246,14 @@ public class EngineExample implements Observer {
 						gui.addImage(green);
 					}
 				}
-				for(int j=0;j>=(hero.getHealth()/2);j++) {
-					if(pos.equals(new Point2D(j,10))) {
-						System.out.println("Red"+"i");
+				if((health%2)==1) {
+					if(pos.equals(new Point2D(4-health/2,10))) {
+						System.out.println("Half"+"i");
 						gui.removeImage((GameHud)entities.get(i));
 						entities.remove(i);
-						GameHud red=new GameHud(pos,"Red");
-						entities.add(i,red);
-						gui.addImage(red);
+						GameHud half=new GameHud(pos,"RedGreen");
+						entities.add(i,half);
+						gui.addImage(half);
 					}
 				}
 				}
