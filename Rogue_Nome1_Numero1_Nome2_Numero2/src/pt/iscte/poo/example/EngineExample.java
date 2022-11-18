@@ -145,7 +145,7 @@ public class EngineExample implements Observer {
 		healthUpdate();
 		Hero hero = (Hero) entities.get(0);
 		if(hero.getHealth()<=0) {
-			gui.setMessage("You're bad at the game!");
+			gui.setMessage("You're dead");
 //			gui.removeImage((Hero)entities.get(0));
 //			entities.remove(0);
 		}
@@ -160,104 +160,57 @@ public class EngineExample implements Observer {
 
 		int key = ((ImageMatrixGUI) source).keyPressed();
 
-		if (key == KeyEvent.VK_DOWN) {
-			Point2D pos = hero.keyCode(key);
-			int index = collision(pos);
-			if (index == -1) {
-				hero.changePosition(pos);
-			} else {
-				GameElement enemy = hero.attack(entities.get(index));
-				entities.remove(index);
-				entities.add(index, enemy);
-			}
-			charactersUpdate();
-			turns++;
+		if (key == KeyEvent.VK_DOWN || key == KeyEvent.VK_UP || key == KeyEvent.VK_LEFT | key == KeyEvent.VK_RIGHT) {
+			heroAction(key);
 		}
-		if (key == KeyEvent.VK_UP) {
-			Point2D pos = hero.keyCode(key);
-			int index = collision(pos);
-			if (index == -1) {
-				hero.changePosition(pos);
-			} else {
-				GameElement enemy = hero.attack(entities.get(index));
-				entities.remove(index);
-				entities.add(index, enemy);
-			}
-			charactersUpdate();
-			turns++;
-		}
-		if (key == KeyEvent.VK_LEFT) {
-			Point2D pos = hero.keyCode(key);
-			int index = collision(pos);
-			if (index == -1) {
-				hero.changePosition(pos);
-			} else {
-				GameElement enemy = hero.attack(entities.get(index));
-				entities.remove(index);
-				entities.add(index, enemy);
-			}
-			charactersUpdate();
-			turns++;
-		}
-		if (key == KeyEvent.VK_RIGHT) {
-			Point2D pos = hero.keyCode(key);
-			int index = collision(pos);
-			if (index == -1) {
-				hero.changePosition(pos);
-			} else {
-				GameElement enemy = hero.attack(entities.get(index));
-				entities.remove(index);
-				entities.add(index, enemy);
-			}
-			charactersUpdate();
-			turns++;
-		}
-		Hero hero = (Hero) entities.get(0); // temporária. Apenas para ver a vida do herói.
-		gui.setStatusMessage("ROGUE Starter Package - Turns:" + turns + "Hero:" + hero.getHealth());
+		gui.setStatusMessage("ROGUE Starter Package - Turns:" + turns);
 		gui.update();
 	}
 	
-	public void healthUpdate() {
+	public void heroAction(int key) {
+		Point2D pos = hero.keyCode(key);
+		int index = collision(pos);
+		if (index == -1) {
+			hero.changePosition(pos);
+		} else {
+			GameElement enemy = hero.attack(entities.get(index));
+			entities.remove(index);
+			entities.add(index, enemy);
+		}
+		charactersUpdate();
+		turns++;
+	}
+	public void healthUpdate () {
 		for (int i = 1; i != entities.size(); i++) {;
 			if(entities.get(i) instanceof GameHud) {
-				System.out.println("InsideHealthupdate"+i);
 				Point2D pos=entities.get(i).getGamePosition();
 				
 				Hero hero = (Hero) entities.get(0);
 				int health=hero.getHealth();
 				for(int j=5;j>=(health/2);j--) {
-					System.out.println("Green1"+"i");
 					if(pos.equals(new Point2D(4-j,10))) {
-						System.out.println("Green"+"i");
-						gui.removeImage((GameHud)entities.get(i));
-						entities.remove(i);
-						GameHud red=new GameHud(pos,"Red");
-						entities.add(i,red);
-						gui.addImage(red);
+						healthSuport(i,pos,"Red");
 					}
 				}
 				for(int j=0;j<(health/2);j++) {
 					if(pos.equals(new Point2D(4-j,10))) {
-						System.out.println("Red"+"i");
-						gui.removeImage((GameHud)entities.get(i));
-						entities.remove(i);
-						GameHud green=new GameHud(pos,"Green");
-						entities.add(i,green);
-						gui.addImage(green);
+						healthSuport(i,pos,"Green");
 					}
 				}
 				if((health%2)==1) {
 					if(pos.equals(new Point2D(4-health/2,10))) {
-						System.out.println("Half"+"i");
-						gui.removeImage((GameHud)entities.get(i));
-						entities.remove(i);
-						GameHud half=new GameHud(pos,"RedGreen");
-						entities.add(i,half);
-						gui.addImage(half);
+						healthSuport(i,pos,"RedGreen");
 					}
 				}
 				}
 			}
+	}
+	public void healthSuport(int i,Point2D pos,String colour) {
+		gui.removeImage((GameHud)entities.get(i));
+		entities.remove(i);
+		GameHud Color=new GameHud(pos,colour);
+		entities.add(i,Color);
+		gui.addImage(Color);
 	}
 
 	public int collision(Point2D position) {
