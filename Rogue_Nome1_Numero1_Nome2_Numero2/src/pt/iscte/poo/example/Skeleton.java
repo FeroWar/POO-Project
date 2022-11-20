@@ -4,7 +4,7 @@ import pt.iscte.poo.gui.ImageTile;
 import pt.iscte.poo.utils.Point2D;
 import pt.iscte.poo.utils.Vector2D;
 
-public class Skeleton extends Enemy implements ImageTile, Movable, Attackable {
+public class Skeleton extends Enemy implements ImageTile, Movable, Attackable{
 
 	public Skeleton(Point2D position) {
 		super(position, 5, 1);

@@ -8,6 +8,7 @@ import pt.iscte.poo.observer.Observed;
 import pt.iscte.poo.observer.Observer;
 import pt.iscte.poo.utils.Point2D;
 import java.awt.event.KeyEvent;
+import pt.iscte.poo.utils.Vector2D;
 
 public class EngineExample implements Observer {
 
@@ -18,10 +19,7 @@ public class EngineExample implements Observer {
 	private ImageMatrixGUI gui = ImageMatrixGUI.getInstance();
 
 	private Hero hero;
-	private Skeleton skeleton;
-	private Bat bat;
-	private Thug thug;
-	private Wall wall;
+	private Sword sword;
 	private GameHud hud;
 	private List<GameElement> entities;
 	private int turns;
@@ -41,25 +39,12 @@ public class EngineExample implements Observer {
 	public void start() {
 		entities = new ArrayList<>();
 		addFloor();
+		Room m=new Room(0);
+		this.entities=m.getList();
+		startHud();
 		addHero(new Point2D(4, 4));
-		addSkeleton(new Point2D(1, 1));
-		addBat(new Point2D(4, 8));
-		addThug(new Point2D(8, 3));
-		addWall(new Point2D(0, 0));
-		addWall(new Point2D(0, 1));
-		addWall(new Point2D(0, 2));
-		addWall(new Point2D(0, 3));
-		addWall(new Point2D(0, 4));
-		addWall(new Point2D(0, 5));
-		addWall(new Point2D(0, 6));
-		addWall(new Point2D(0, 7));
-		addWall(new Point2D(0, 8));
-		addWall(new Point2D(0, 9));
-		addGreen(new Point2D(0, 10));
-		addGreen(new Point2D(1, 10));
-		addGreen(new Point2D(2, 10));
-		addGreen(new Point2D(3, 10));
-		addGreen(new Point2D(4, 10));
+		addSword(new Point2D(3,4));
+		addSword(new Point2D(6,4));
 		gui.setStatusMessage("ROGUE Starter Package - Turns:" + turns);
 		gui.update();
 	}
@@ -77,7 +62,12 @@ public class EngineExample implements Observer {
 		entities.add(entities.size(), hero);
 		gui.addImage(hero);
 	}
-
+	private void addSword(Point2D position) {
+		sword = new Sword(position);
+		entities.add(sword);
+		gui.addImage(sword);
+	}
+	
 	private void addGreen(Point2D position) {
 		hud = new GameHud(position,"Green");
 		entities.add(entities.size(), hud);
@@ -93,41 +83,15 @@ public class EngineExample implements Observer {
 		entities.add(entities.size(), hud);
 		gui.addImage(hud);
 	}
-	private void addWall(Point2D position) {
-		wall = new Wall(position);
-		entities.add(entities.size(), wall);
-		gui.addImage(wall);
+	private void addBlack(Point2D position) {
+		hud = new GameHud(position,"Black");
+		entities.add(entities.size(), hud);
+		gui.addImage(hud);
 	}
-
-	private void addSkeleton(Point2D position) {
-		skeleton = new Skeleton(position);
-		entities.add(entities.size(), skeleton);
-		gui.addImage(skeleton);
-	}
-
-	private void addBat(Point2D position) {
-		bat = new Bat(position);
-		entities.add(entities.size(), bat);
-		gui.addImage(bat);
-	}
-
-	private void addThug(Point2D position) {
-		thug = new Thug(position);
-		entities.add(entities.size(), thug);
-		gui.addImage(thug);
-	}
-
-//	Public Static AbstractObject Create(String type, Point2D p) {
-//	    if(type.equals("Bat")) {
-//	        return new Bat(p);
-//	    }else if(type.equals("Skeleton") {
-//			return new Skeleton(p);
-//	    }
-//	}
 	private void charactersUpdate() {
-		for (int i = 1; i != entities.size(); i++) { // tivemos que impedir o heroi de ser percorrido pela funcao para
+		for (int i = 0; i != entities.size(); i++) { // tivemos que impedir o heroi de ser percorrido pela funcao para
 		// ele não dar dano a si mesmo de cada vez que andava.
-			if (entities.get(i) instanceof Enemy) {
+			if (entities.get(i) instanceof Enemy && !(entities.get(i) instanceof Hero)) {
 				Enemy enemy = (Enemy) entities.get(i);
 				Point2D pos = enemy.move(hero.getPosition());
 				int index = collision(pos);
@@ -142,10 +106,10 @@ public class EngineExample implements Observer {
 				}
 			}
 		}
+		hudUpdate();
 		healthUpdate();
-		Hero hero = (Hero) entities.get(0);
 		if(hero.getHealth()<=0) {
-			gui.setMessage("You're dead");
+			//gui.setMessage("You're dead");
 //			gui.removeImage((Hero)entities.get(0));
 //			entities.remove(0);
 		}
@@ -157,11 +121,29 @@ public class EngineExample implements Observer {
 
 	@Override
 	public void update(Observed source) {
+		
+		for (int h = 0; h != entities.size(); h++) {
+			if(entities.get(h) instanceof Hero) {
+				this.hero = (Hero) entities.get(h);
+			}
+	}
 
 		int key = ((ImageMatrixGUI) source).keyPressed();
 
 		if (key == KeyEvent.VK_DOWN || key == KeyEvent.VK_UP || key == KeyEvent.VK_LEFT | key == KeyEvent.VK_RIGHT) {
 			heroAction(key);
+		}
+		if(key == KeyEvent.VK_Q) {
+			if(hero.getInventory().size()>=1) {
+			GameElement item=(GameElement)hero.getInventory().get(0);
+			heroDrop(item,0);
+		}
+		}
+		if(key == KeyEvent.VK_W) {
+			hero.drop(1);
+		}
+		if(key == KeyEvent.VK_E) {
+			hero.drop(2);
 		}
 		gui.setStatusMessage("ROGUE Starter Package - Turns:" + turns);
 		gui.update();
@@ -170,22 +152,85 @@ public class EngineExample implements Observer {
 	public void heroAction(int key) {
 		Point2D pos = hero.keyCode(key);
 		int index = collision(pos);
-		if (index == -1) {
+		if (index == -1 || entities.get(index) instanceof Pickable) {
 			hero.changePosition(pos);
+			if(index!=-1) {
+				if(hero.pickUp(entities.get(index))) {
+					hudUpdate();
+					gui.removeImage(entities.get(index));
+					entities.remove(index);
+			}
+			}
 		} else {
-			GameElement enemy = hero.attack(entities.get(index));
+			GameElement entity =hero.attack(entities.get(index));
+			if(entity instanceof Enemy) {
+			Enemy enemy1=(Enemy)entity;
+			if(enemy1.getHealth()<=0) {
+			gui.removeImage(entities.get(index));
 			entities.remove(index);
-			entities.add(index, enemy);
+			}else {
+				entities.remove(index);
+				entities.add(index, entity);
+			}
+			}
 		}
 		charactersUpdate();
 		turns++;
 	}
+	public void heroDrop(GameElement item,int i) {
+		if(itemCollision(hero.getGamePosition())==-1) {
+			System.out.println(itemCollision(hero.getGamePosition())+"1");
+			item.changePosition(hero.getGamePosition());
+			entities.add(item);
+			gui.addImage(item);
+			hero.drop(i);
+		}else if(itemCollision(hero.getGamePosition().plus(new Vector2D(-1,0)))==-1){
+			System.out.println(itemCollision(hero.getGamePosition().plus(new Vector2D(-1,0)))+"2");
+			item.changePosition(hero.getGamePosition().plus(new Vector2D(1,0)));
+			entities.add(item);
+			gui.addImage(item);
+			hero.drop(i);
+		}else if(itemCollision(hero.getGamePosition().plus(new Vector2D(0,-1)))==-1){
+			System.out.println(itemCollision(hero.getGamePosition().plus(new Vector2D(0,-1)))+"3");
+			item.changePosition(hero.getGamePosition().plus(new Vector2D(0,-1)));
+			entities.add(item);
+			gui.addImage(item);
+			hero.drop(i);
+		}else if(itemCollision(hero.getGamePosition().plus(new Vector2D(1,0)))==-1){
+			System.out.println(itemCollision(hero.getGamePosition().plus(new Vector2D(1,0)))+"4");
+			item.changePosition(hero.getGamePosition().plus(new Vector2D(-1,0)));
+			entities.add(item);
+			gui.addImage(item);
+			hero.drop(i);
+		}
+	}
+	public int collision(Point2D position) {
+		for (int i = 0; i != entities.size(); i++) {
+			if (position.equals(entities.get(i).getGamePosition())) {
+				return i;
+			}
+		}
+		return -1;
+	}
+	public int itemCollision(Point2D position) {
+		for (int i = 0; i != entities.size(); i++) {
+			if (!(entities.get(i) instanceof Hero) && position.equals(entities.get(i).getGamePosition())) {
+				return i;
+			}
+		}
+		return -1;
+	}
+	
 	public void healthUpdate () {
-		for (int i = 1; i != entities.size(); i++) {;
+		Hero hero=new Hero(new Point2D(4,4));
+		for (int h = 0; h != entities.size(); h++) {
+			if(entities.get(h) instanceof Hero) {
+				hero = (Hero) entities.get(h);
+			}
+	}
+		for (int i = 0; i != entities.size(); i++) {;
 			if(entities.get(i) instanceof GameHud) {
 				Point2D pos=entities.get(i).getGamePosition();
-				
-				Hero hero = (Hero) entities.get(0);
 				int health=hero.getHealth();
 				for(int j=5;j>=(health/2);j--) {
 					if(pos.equals(new Point2D(4-j,10))) {
@@ -206,19 +251,36 @@ public class EngineExample implements Observer {
 			}
 	}
 	public void healthSuport(int i,Point2D pos,String colour) {
-		gui.removeImage((GameHud)entities.get(i));
+		gui.removeImage(entities.get(i));
 		entities.remove(i);
 		GameHud Color=new GameHud(pos,colour);
 		entities.add(i,Color);
 		gui.addImage(Color);
 	}
-
-	public int collision(Point2D position) {
-		for (int i = 0; i != entities.size(); i++) {
-			if (position.equals(entities.get(i).getGamePosition())) {
-				return i;
-			}
+	public void hudUpdate () {
+		for(int i=0;i!=3;i++) {
+			hudSupport(i);
 		}
-		return -1;
+	}
+	public void hudSupport(int i) {
+		List<Pickable> inventory = hero.getInventory();
+		if (inventory.size() > i) {
+			GameElement item = (GameElement) inventory.get(i);
+			item.changePosition(new Point2D(i+7, 10));
+			entities.add(item);
+			gui.addImage(item);
+		}
+	}
+	public void startHud() {
+		addGreen(new Point2D(0, 10));
+		addGreen(new Point2D(1, 10));
+		addGreen(new Point2D(2, 10));
+		addGreen(new Point2D(3, 10));
+		addGreen(new Point2D(4, 10));
+		addBlack(new Point2D(5, 10));
+		addBlack(new Point2D(6, 10));
+		addBlack(new Point2D(7, 10));
+		addBlack(new Point2D(8, 10));
+		addBlack(new Point2D(9, 10));
 	}
 }

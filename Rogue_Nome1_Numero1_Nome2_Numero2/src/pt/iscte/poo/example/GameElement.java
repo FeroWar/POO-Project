@@ -1,8 +1,9 @@
 package pt.iscte.poo.example;
 
+import pt.iscte.poo.gui.ImageTile;
 import pt.iscte.poo.utils.Point2D;
 
-public abstract class GameElement {// implemntes image tile
+public abstract class GameElement implements ImageTile{
 	private Point2D position;
 	private int layer;
 

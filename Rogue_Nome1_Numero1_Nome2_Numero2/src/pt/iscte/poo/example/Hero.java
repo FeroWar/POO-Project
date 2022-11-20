@@ -1,5 +1,6 @@
 package pt.iscte.poo.example;
 
+import java.util.ArrayList;
 import pt.iscte.poo.gui.ImageTile;
 import pt.iscte.poo.utils.Direction;
 import pt.iscte.poo.utils.Point2D;
@@ -7,10 +8,12 @@ import pt.iscte.poo.utils.Vector2D;
 
 public class Hero extends Enemy implements ImageTile,Movable,Attackable {
 	private int armor;
+	private ArrayList<Pickable> inventory;
 
 	public Hero(Point2D position) {
 		super(position,10,1); //10  vida,  1 damage. Como  são os dados default, e sempre que for criado um  herói tem que ser mediante estes mesmos  dados, consideramos que não é necessário dá-los como argumentos.
 		this.armor=0;
+		this.inventory=new ArrayList<Pickable>();
 	}
 
 	@Override
@@ -56,5 +59,23 @@ public class Hero extends Enemy implements ImageTile,Movable,Attackable {
 			return enemy2;
 		}
 		return enemy;
+	}
+	
+	public boolean pickUp(GameElement item){
+		if(inventory.size()<3) {
+			inventory.add((Pickable)item);
+			return true;
+		}
+		return false;
+		}
+	
+	public void drop(int i){
+		if(inventory.size()>=i) {
+			inventory.remove(i);
+			}
+	}
+
+	public ArrayList<Pickable> getInventory(){
+		return inventory;
 	}
 }
