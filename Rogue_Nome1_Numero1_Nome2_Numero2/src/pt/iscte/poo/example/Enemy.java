@@ -37,7 +37,11 @@ public abstract class Enemy extends GameElement implements ImageTile,Movable,Att
 		}
 		@Override
 		public void changeHealth(int hp) {
+			if(hp<0) {
+				this.health=0;
+			}else {
 			this.health=hp;
+			}
 		}
 		@Override
 		public void changeDamage(int dmg) {

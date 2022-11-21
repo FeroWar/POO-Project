@@ -21,6 +21,7 @@ public class EngineExample implements Observer {
 	private Hero hero;
 	private Sword sword;
 	private GameHud hud;
+	private GameElement item;
 	private List<GameElement> entities;
 	private int turns;
 
@@ -39,12 +40,11 @@ public class EngineExample implements Observer {
 	public void start() {
 		entities = new ArrayList<>();
 		addFloor();
-		Room m=new Room(0);
+		Room m=new Room("room0");
 		this.entities=m.getList();
 		startHud();
 		addHero(new Point2D(4, 4));
-		addSword(new Point2D(3,4));
-		addSword(new Point2D(6,4));
+		addHealthPotion(new Point2D(3, 4));
 		gui.setStatusMessage("ROGUE Starter Package - Turns:" + turns);
 		gui.update();
 	}
@@ -62,12 +62,11 @@ public class EngineExample implements Observer {
 		entities.add(entities.size(), hero);
 		gui.addImage(hero);
 	}
-	private void addSword(Point2D position) {
-		sword = new Sword(position);
-		entities.add(sword);
-		gui.addImage(sword);
+	private void addHealthPotion(Point2D position) {
+		item = new HealthPotion(position);
+		entities.add(item);
+		gui.addImage(item);
 	}
-	
 	private void addGreen(Point2D position) {
 		hud = new GameHud(position,"Green");
 		entities.add(entities.size(), hud);
@@ -135,16 +134,21 @@ public class EngineExample implements Observer {
 		}
 		if(key == KeyEvent.VK_Q) {
 			if(hero.getInventory().size()>=1) {
-			GameElement item=(GameElement)hero.getInventory().get(0);
-			heroDrop(item,0);
+			heroDrop(0);
 		}
 		}
 		if(key == KeyEvent.VK_W) {
-			hero.drop(1);
+			if(hero.getInventory().size()>=2) {
+			heroDrop(1);
+		}
 		}
 		if(key == KeyEvent.VK_E) {
-			hero.drop(2);
+			if(hero.getInventory().size()>=3) {
+			heroDrop(2);
 		}
+		}
+		hudUpdate();
+		healthUpdate();
 		gui.setStatusMessage("ROGUE Starter Package - Turns:" + turns);
 		gui.update();
 	}
@@ -152,17 +156,10 @@ public class EngineExample implements Observer {
 	public void heroAction(int key) {
 		Point2D pos = hero.keyCode(key);
 		int index = collision(pos);
-		if (index == -1 || entities.get(index) instanceof Pickable) {
+		if (index == -1) {
 			hero.changePosition(pos);
-			if(index!=-1) {
-				if(hero.pickUp(entities.get(index))) {
-					hudUpdate();
-					gui.removeImage(entities.get(index));
-					entities.remove(index);
-			}
-			}
-		} else {
-			GameElement entity =hero.attack(entities.get(index));
+		} else if(entities.get(index) instanceof Enemy){
+			GameElement entity=hero.attack(entities.get(index));
 			if(entity instanceof Enemy) {
 			Enemy enemy1=(Enemy)entity;
 			if(enemy1.getHealth()<=0) {
@@ -173,34 +170,74 @@ public class EngineExample implements Observer {
 				entities.add(index, entity);
 			}
 			}
+		}else if(entities.get(index) instanceof Pickable) {
+			hero.changePosition(pos);
+			if(hero.pickUp(entities.get(index))) {
+				hudUpdate();
+				gui.removeImage(entities.get(index));
+				entities.remove(index);
+		}
+		}else if(entities.get(index) instanceof Door) {
+			for(int i=0;i!=hero.getInventory().size();i++) {
+				if(hero.getInventory().get(i) instanceof Key) {
+				Key Dkey=(Key)hero.getInventory().get(i);
+				Door door=(Door)entities.get(index);
+				if(door.getId()==null){
+					for (int j = 0; j != entities.size(); j++) {
+						gui.removeImage(entities.get(j));
+						gui.update();
+					}
+					Room m=new Room(door.getRoom());
+					this.entities=m.getList();
+					hero.changePosition(door.getSpawnPosition());
+					entities.add(hero);
+					gui.addImage(hero);
+					gui.update();
+					startHud();
+					hudUpdate();
+					healthUpdate();
+				}else if(door.getId().equals(Dkey.getId())) {
+					for (int j = 0; j != entities.size(); j++) {
+						gui.removeImage(entities.get(j));
+						gui.update();
+					}
+					Room m=new Room(door.getRoom());
+					this.entities=m.getList();
+					hero.changePosition(door.getSpawnPosition());
+					entities.add(hero);
+					gui.addImage(hero);
+					gui.update();
+					startHud();
+					hudUpdate();
+					healthUpdate();
+				}
+			}
+		}
 		}
 		charactersUpdate();
 		turns++;
 	}
-	public void heroDrop(GameElement item,int i) {
+	public void heroDrop(int i) {
+		GameElement item=(GameElement)hero.getInventory().get(i);
+		Point2D pos=new Point2D(0,0);
 		if(itemCollision(hero.getGamePosition())==-1) {
-			System.out.println(itemCollision(hero.getGamePosition())+"1");
-			item.changePosition(hero.getGamePosition());
-			entities.add(item);
-			gui.addImage(item);
-			hero.drop(i);
-		}else if(itemCollision(hero.getGamePosition().plus(new Vector2D(-1,0)))==-1){
-			System.out.println(itemCollision(hero.getGamePosition().plus(new Vector2D(-1,0)))+"2");
-			item.changePosition(hero.getGamePosition().plus(new Vector2D(1,0)));
-			entities.add(item);
-			gui.addImage(item);
-			hero.drop(i);
-		}else if(itemCollision(hero.getGamePosition().plus(new Vector2D(0,-1)))==-1){
-			System.out.println(itemCollision(hero.getGamePosition().plus(new Vector2D(0,-1)))+"3");
-			item.changePosition(hero.getGamePosition().plus(new Vector2D(0,-1)));
-			entities.add(item);
-			gui.addImage(item);
-			hero.drop(i);
+			pos=(hero.getGamePosition());
 		}else if(itemCollision(hero.getGamePosition().plus(new Vector2D(1,0)))==-1){
-			System.out.println(itemCollision(hero.getGamePosition().plus(new Vector2D(1,0)))+"4");
-			item.changePosition(hero.getGamePosition().plus(new Vector2D(-1,0)));
+			pos=(hero.getGamePosition().plus(new Vector2D(1,0)));
+		}else if(itemCollision(hero.getGamePosition().plus(new Vector2D(0,-1)))==-1){
+			pos=(hero.getGamePosition().plus(new Vector2D(0,-1)));
+		}else if(itemCollision(hero.getGamePosition().plus(new Vector2D(-1,0)))==-1){
+			pos=(hero.getGamePosition().plus(new Vector2D(-1,0)));
+		}
+		if(!(item instanceof HealthPotion)) {
+			item.changePosition(pos);
 			entities.add(item);
 			gui.addImage(item);
+			hero.drop(i);
+		}else {
+			item.changePosition(new Point2D(-1,-1));
+			entities.remove(item);
+			gui.removeImage(item);
 			hero.drop(i);
 		}
 	}
@@ -214,10 +251,12 @@ public class EngineExample implements Observer {
 	}
 	public int itemCollision(Point2D position) {
 		for (int i = 0; i != entities.size(); i++) {
-			if (!(entities.get(i) instanceof Hero) && position.equals(entities.get(i).getGamePosition())) {
+			if(!(entities.get(i) instanceof Hero)) {
+			if (position.equals(entities.get(i).getGamePosition())) {
 				return i;
 			}
-		}
+			}
+			}
 		return -1;
 	}
 	
@@ -233,8 +272,10 @@ public class EngineExample implements Observer {
 				Point2D pos=entities.get(i).getGamePosition();
 				int health=hero.getHealth();
 				for(int j=5;j>=(health/2);j--) {
+					if(j>=0) {
 					if(pos.equals(new Point2D(4-j,10))) {
 						healthSuport(i,pos,"Red");
+					}
 					}
 				}
 				for(int j=0;j<(health/2);j++) {

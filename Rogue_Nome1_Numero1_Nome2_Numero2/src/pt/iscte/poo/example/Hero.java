@@ -64,6 +64,12 @@ public class Hero extends Enemy implements ImageTile,Movable,Attackable {
 	public boolean pickUp(GameElement item){
 		if(inventory.size()<3) {
 			inventory.add((Pickable)item);
+			if(item instanceof Sword) {
+				this.changeDamage(getDamage()*2);
+			}else if(item instanceof Armor) {
+				this.armor++;
+			}
+				
 			return true;
 		}
 		return false;
@@ -71,7 +77,20 @@ public class Hero extends Enemy implements ImageTile,Movable,Attackable {
 	
 	public void drop(int i){
 		if(inventory.size()>=i) {
+			GameElement item=(GameElement)inventory.get(i);
+			if(item instanceof Sword) {
+				this.changeDamage(getDamage()/2);
+			}else if(item instanceof Armor) {
+				this.armor--;
+			}else if(item instanceof HealthPotion) {
+				if(this.getHealth()<=5) {
+					this.changeHealth(this.getHealth()+5);
+				}else {
+					this.changeHealth(10);
+				}
+			}
 			inventory.remove(i);
+			
 			}
 	}
 

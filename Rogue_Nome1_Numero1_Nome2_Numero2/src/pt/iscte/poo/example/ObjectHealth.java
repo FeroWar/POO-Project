@@ -6,8 +6,8 @@ public abstract class ObjectHealth extends GameElement{
 	private int health;
 	private int damage;
 	
-	public ObjectHealth(Point2D position,int objHID, int l,int hp,int dmg) {
-		super(position, l,objHID);
+	public ObjectHealth(Point2D position,int hp,int dmg) {
+		super(position);
 		this.health=hp;
 		this.damage=dmg;
 	}
