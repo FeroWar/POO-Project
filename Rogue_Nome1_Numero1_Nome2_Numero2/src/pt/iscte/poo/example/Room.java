@@ -76,81 +76,62 @@ public class Room {
 		this.roomElement = a;
 	}
 
-	private void addHero(Point2D position) {
-		hero = new Hero(position);
-		roomElement.add(hero);
-		gui.addImage(hero);
-	}
-
 	private void addGreen(Point2D position) {
 		hud = new GameHud(position, "Green");
 		roomElement.add(hud);
-		gui.addImage(hud);
 	}
 
 	private void addRed(Point2D position) {
 		hud = new GameHud(position, "Red");
 		roomElement.add(hud);
-		gui.addImage(hud);
 	}
 
 	private void addRedGreen(Point2D position) {
 		hud = new GameHud(position, "RedGreen");
 		roomElement.add(hud);
-		gui.addImage(hud);
 	}
 
 	private void addWall(Point2D position) {
 		wall = new Wall(position);
 		roomElement.add(wall);
-		gui.addImage(wall);
 	}
 
 	private void addSkeleton(Point2D position) {
 		enemy = new Skeleton(position);
 		roomElement.add(enemy);
-		gui.addImage(enemy);
 	}
 
 	private void addBat(Point2D position) {
 		enemy = new Bat(position);
 		roomElement.add(enemy);
-		gui.addImage(enemy);
 	}
 
 	private void addThug(Point2D position) {
 		enemy = new Thug(position);
 		roomElement.add(enemy);
-		gui.addImage(enemy);
 	}
 	private void addSword(Point2D position) {
 		item = new Sword(position);
 		roomElement.add(item);
-		gui.addImage(item);
 	}
 	private void addArmor(Point2D position) {
 		item = new Armor(position);
 		roomElement.add(item);
-		gui.addImage(item);
 	}
 	private void addKey(Point2D position,String id) {
 		item = new Key(position,id);
 		roomElement.add(item);
-		gui.addImage(item);
 	}
 	private void addHealthPotion(Point2D position) {
 		item = new HealthPotion(position);
 		roomElement.add(item);
-		gui.addImage(item);
 	}
 	private void addDoor(Point2D position,String room,Point2D newPos,String id) {
 		door = new Door(position,room,newPos,id);
 		roomElement.add(door);
-		gui.addImage(door);
 	}
 	private void addDoorOpen(Point2D position,String room,Point2D newPos) {
 		door = new Door(position,room,newPos);
 		roomElement.add(door);
-		gui.addImage(door);
 	}
 }

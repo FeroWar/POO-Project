@@ -35,7 +35,7 @@ public class Door extends GameElement implements ImageTile {
 
 	@Override
 	public int getLayer() {
-		return 1;
+		return 0;
 	}
 	public String getId() {
 		return id;
