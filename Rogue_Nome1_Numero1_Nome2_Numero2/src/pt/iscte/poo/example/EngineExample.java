@@ -146,11 +146,14 @@ public class EngineExample implements Observer {
 	}
 
 	public void heroAction(int key) {
+		System.out.println(entities);
 		Point2D pos = hero.keyCode(key);
 		int index = collision(pos);
 		if (index == -1) {
 			hero.changePosition(pos);
-		} else if (entities.get(index) instanceof Enemy) {
+		}else if(index ==  -2) {
+			return;
+		}else if (entities.get(index) instanceof Enemy) {
 			GameElement entity = hero.attack(entities.get(index));
 			if (entity instanceof Enemy) {
 				Enemy enemy1 = (Enemy) entity;
@@ -166,8 +169,9 @@ public class EngineExample implements Observer {
 			hero.changePosition(pos);
 			if (hero.pickUp(entities.get(index))) {
 				hudUpdate();
-				gui.removeImage(entities.get(index));
-				entities.remove(index);
+				entities.remove(entities.get(index));
+				System.out.println(entities);
+//				gui.removeImage(entities.get(index));
 			}
 		} else if (entities.get(index) instanceof Door) {
 			Door door = (Door) entities.get(index);
@@ -178,8 +182,9 @@ public class EngineExample implements Observer {
 					if (hero.getInventory().get(i) instanceof Key) {
 						Key Dkey = (Key) hero.getInventory().get(i);
 						if (door.getId().equals(Dkey.getId())) {
-							hudClear();
 							hero.drop(i);
+							gui.removeImage(Dkey);
+							hudUpdate();
 							roomUpdate(door, index);
 							break;
 						}
@@ -199,22 +204,21 @@ public class EngineExample implements Observer {
 		gui.addImage(entities.get(index));
 		rooms.remove(currentRoom);
 		rooms.add(currentRoom, this.entities);
-		for (int j = 0; j != entities.size(); j++) {
-			gui.removeImage(entities.get(j));
-		}
+		gui.clearImages();
 		String[] id = door.getRoom().split("m");
 		this.entities = rooms.get(Integer.parseInt(id[1]));
 		currentRoom = Integer.parseInt(id[1]);
+		addFloor();
 		for (int w = 0; w != entities.size(); w++) {
 			gui.addImage(entities.get(w));
 		}
 		hero.changePosition(door.getSpawnPosition());
 		entities.add(hero);
 		gui.addImage(hero);
-		gui.update();
 		startHud();
 		hudUpdate();
 		healthUpdate();
+		gui.update();
 	}
 
 	public void heroDrop(int i) {
@@ -231,6 +235,7 @@ public class EngineExample implements Observer {
 		}
 		if (!(item instanceof HealthPotion)) {
 			item.changePosition(pos);
+			entities.add(item);
 			hero.drop(i);
 		} else {
 			item.changePosition(new Point2D(4, 4));
@@ -242,6 +247,9 @@ public class EngineExample implements Observer {
 	}
 
 	public int collision(Point2D position) {
+		if(position.getX()>10 ||position.getX()<0 || position.getY()>10 || position.getY()<0) {
+			return -2;
+		}
 		for (int i = 0; i != entities.size(); i++) {
 			if (position.equals(entities.get(i).getGamePosition())) {
 				return i;
@@ -335,7 +343,6 @@ public class EngineExample implements Observer {
 	public void hudSupport(int i) {
 		GameElement item = (GameElement) hero.getInventory().get(i);
 		item.changePosition(new Point2D(i + 7, 10));
-		entities.add(item);
 		gui.addImage(item);
 	}
 
