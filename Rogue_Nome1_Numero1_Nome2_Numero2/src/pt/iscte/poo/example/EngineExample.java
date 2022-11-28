@@ -105,6 +105,7 @@ public class EngineExample implements Observer {
 		hero.getHit(hero.getPoison());
 		healthUpdate();
 		if (hero.getHealth() <= 0) {
+			Scoreboard.teste(PlayerName,score);
 			if(gui.askUser("You Died, Want to restart?").equals("y")){
 			gui.clearImages();
 			EngineExample.getInstance().start();
@@ -154,6 +155,7 @@ public class EngineExample implements Observer {
 			hero.changePosition(pos);	
 		}else if(index ==  -3) {
 			gui.setStatusMessage("ROGUE Starter Package - Turns:" + turns+" - "+PlayerName+":"+score);
+			Scoreboard.teste(PlayerName,score);
 			if(gui.askUser("You Won with "+score+" points, Want to restart?").equals("y")){
 			gui.clearImages();
 			EngineExample.getInstance().start();
@@ -164,32 +166,12 @@ public class EngineExample implements Observer {
 		}else if(index ==  -2) {
 			return;
 		}else if (rooms.get(currentRoom).get(index) instanceof Enemy) {
-			hero.heroEnemy(index);
+			hero.heroEnemy((Enemy)rooms.get(currentRoom).get(index),index);
 		} else if (rooms.get(currentRoom).get(index) instanceof Pickable) {
 			hero.changePosition(pos);
-			if (hero.pickUp(rooms.get(currentRoom).get(index))) {
-				gui.removeImage(rooms.get(currentRoom).get(index));
-				hudUpdate();
-				rooms.get(currentRoom).remove(rooms.get(currentRoom).get(index));
-			}
+			hero.heroPickable(rooms.get(currentRoom).get(index));
 		} else if (rooms.get(currentRoom).get(index) instanceof Door) {
-			Door door = (Door) rooms.get(currentRoom).get(index);
-			if (door.getId() == null) {
-				roomUpdate(door, index);
-			} else {
-				for (int i = 0; i != hero.getInventory().size(); i++) {
-					if (hero.getInventory().get(i) instanceof Key) {
-						Key Dkey = (Key) hero.getInventory().get(i);
-						if (door.getId().equals(Dkey.getId())) {
-							score+=1000;
-							hero.drop(i);
-							hudUpdate();
-							roomUpdate(door, index);
-							break;
-						}
-					}
-				}
-			}
+			hero.heroDoor((Door)rooms.get(currentRoom).get(index), index);
 		}
 		charactersUpdate();
 		turns++;

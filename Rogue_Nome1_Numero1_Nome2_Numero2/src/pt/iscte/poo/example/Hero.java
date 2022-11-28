@@ -32,22 +32,47 @@ public class Hero extends Enemy implements ImageTile,Movable,Attackable,Effects 
 	public int getLayer() {
 		return 2;
 	}
-	public void heroEnemy(int index) {
-		Enemy entity = (Enemy)attack(EngineExample.getInstance().roomIndex(index));
+	public void heroDoor(Door door,int index) {
+		if (door.getId() == null) {
+			engine.roomUpdate(door, index);
+		} else {
+			for (int i = 0; i != inventory.size(); i++) {
+				if (inventory.get(i) instanceof Key) {
+					Key Dkey = (Key) inventory.get(i);
+					if (door.getId().equals(Dkey.getId())) {
+						engine.addScore(1000);
+						drop(i);
+						engine.hudUpdate();
+						engine.roomUpdate(door, index);
+						break;
+					}
+				}
+			}
+		}
+	}
+	public void heroPickable(GameElement a) {
+		if (pickUp(a)) {
+			engine.guiRemove(a);
+			engine.hudUpdate();
+			engine.removeFromRoom(a);
+		}
+	}
+	public void heroEnemy(Enemy entity,int index) {
+		attack(entity);
 		if (entity.getHealth() <= 0) {	
-			EngineExample.getInstance().addScore(500);
+			engine.addScore(500);
 			if(entity instanceof Thief) {
 				Thief thief=(Thief) entity;
 				GameElement item = (GameElement)thief.getInventory().get(0);
 				item.changePosition(thief.getGamePosition());
-				EngineExample.getInstance().guiAdd(item);
-				EngineExample.getInstance().addToRoom(item);
+				engine.guiAdd(item);
+				engine.addToRoom(item);
 			}
-			EngineExample.getInstance().guiRemove(EngineExample.getInstance().roomIndex(index));
-			EngineExample.getInstance().removeFromRoomIndex(index);
+			engine.guiRemove(engine.roomIndex(index));
+			engine.removeFromRoom(entity);
 		} else {
-			EngineExample.getInstance().removeFromRoomIndex(index);
-			EngineExample.getInstance().addToRoomIndex(index, entity);
+			engine.removeFromRoom(entity);
+			engine.addToRoomIndex(index, entity);
 		}
 
 	}
@@ -118,24 +143,24 @@ public class Hero extends Enemy implements ImageTile,Movable,Attackable,Effects 
 	public void drop(int i) {
 		GameElement item = (GameElement) getInventory().get(i);
 		Point2D pos = new Point2D(0, 0);
-		if (EngineExample.getInstance().itemCollision(getGamePosition()) == -1) {
+		if (engine.itemCollision(getGamePosition()) == -1) {
 			pos = (getGamePosition());
-		} else if (EngineExample.getInstance().itemCollision(getGamePosition().plus(new Vector2D(1, 0))) == -1) {
+		} else if (engine.itemCollision(getGamePosition().plus(new Vector2D(1, 0))) == -1) {
 			pos = (getGamePosition().plus(new Vector2D(1, 0)));
-		} else if (EngineExample.getInstance().itemCollision(getGamePosition().plus(new Vector2D(0, -1))) == -1) {
+		} else if (engine.itemCollision(getGamePosition().plus(new Vector2D(0, -1))) == -1) {
 			pos = (getGamePosition().plus(new Vector2D(0, -1)));
-		} else if (EngineExample.getInstance().itemCollision(getGamePosition().plus(new Vector2D(-1, 0))) == -1) {
+		} else if (engine.itemCollision(getGamePosition().plus(new Vector2D(-1, 0))) == -1) {
 			pos = (getGamePosition().plus(new Vector2D(-1, 0)));
 		}
 		if (!(item instanceof HealthPotion)) {
 			item.changePosition(pos);
-			EngineExample.getInstance().addToRoom(item);
+			engine.addToRoom(item);
 			dropSupport(i);
 		} else {
-			EngineExample.getInstance().guiRemove(item);
+			engine.guiRemove(item);
 			dropSupport(i);
 		}
-		EngineExample.getInstance().hudUpdate();
+		engine.hudUpdate();
 	}
 
 	public ArrayList<Pickable> getInventory(){
