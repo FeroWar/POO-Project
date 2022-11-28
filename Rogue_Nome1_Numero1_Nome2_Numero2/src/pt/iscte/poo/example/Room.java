@@ -18,6 +18,7 @@ public class Room {
 	private GameHud hud;
 	private GameElement enemy;
 	private GameElement item;
+	private GameElement treasure;
 
 	public Room() {
 		roomElement = new ArrayList<GameElement>();
@@ -51,6 +52,10 @@ public class Room {
             addSkeleton(new Point2D(Integer.parseInt(chars[1]),Integer.parseInt(chars[2])));
         }else if(chars[0].equals("Thug")) {
             addThug(new Point2D(Integer.parseInt(chars[1]),Integer.parseInt(chars[2])));
+        }else if(chars[0].equals("Thief")) {
+            addThief(new Point2D(Integer.parseInt(chars[1]),Integer.parseInt(chars[2])));
+        }else if(chars[0].equals("Scorpion")) {
+            addScorpion(new Point2D(Integer.parseInt(chars[1]),Integer.parseInt(chars[2])));
         }else if(chars[0].equals("Sword")) {
             addSword(new Point2D(Integer.parseInt(chars[1]),Integer.parseInt(chars[2])));
         }else if(chars[0].equals("Armor")) {
@@ -59,12 +64,16 @@ public class Room {
             addHealthPotion(new Point2D(Integer.parseInt(chars[1]),Integer.parseInt(chars[2])));
         }else if(chars[0].equals("Key")) {
             addKey(new Point2D(Integer.parseInt(chars[1]),Integer.parseInt(chars[2])),chars[3]);
-        }else if(chars[0].equals("Door")) {
-        	if(chars.length>=7) {
-        	 addDoor(new Point2D(Integer.parseInt(chars[1]),Integer.parseInt(chars[2])),chars[3],new Point2D(Integer.parseInt(chars[4]),Integer.parseInt(chars[5])),chars[6]);
-        	}else {
-            addDoorOpen(new Point2D(Integer.parseInt(chars[1]),Integer.parseInt(chars[2])),chars[3],new Point2D(Integer.parseInt(chars[4]),Integer.parseInt(chars[5])));
-        }
+		} else if (chars[0].equals("Door")) {
+			if (chars.length >= 7) {
+				addDoor(new Point2D(Integer.parseInt(chars[1]), Integer.parseInt(chars[2])), chars[3],
+						new Point2D(Integer.parseInt(chars[4]), Integer.parseInt(chars[5])), chars[6]);
+			} else {
+				addDoorOpen(new Point2D(Integer.parseInt(chars[1]), Integer.parseInt(chars[2])), chars[3],
+						new Point2D(Integer.parseInt(chars[4]), Integer.parseInt(chars[5])));
+			}
+    }else if(chars[0].equals("Treasure")) {
+    	addTreasure(new Point2D(Integer.parseInt(chars[1]),Integer.parseInt(chars[2])));
     }
     }
 
@@ -110,6 +119,14 @@ public class Room {
 		enemy = new Thug(position);
 		roomElement.add(enemy);
 	}
+	private void addThief(Point2D position) {
+		enemy = new Thief(position);
+		roomElement.add(enemy);
+	}
+	private void addScorpion(Point2D position) {
+		enemy = new Scorpion(position);
+		roomElement.add(enemy);
+	}
 	private void addSword(Point2D position) {
 		item = new Sword(position);
 		roomElement.add(item);
@@ -133,5 +150,9 @@ public class Room {
 	private void addDoorOpen(Point2D position,String room,Point2D newPos) {
 		door = new Door(position,room,newPos);
 		roomElement.add(door);
+	}
+	private void addTreasure(Point2D position) {
+		treasure = new Treasure(position);
+		roomElement.add(treasure);
 	}
 }

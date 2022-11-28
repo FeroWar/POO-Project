@@ -6,9 +6,11 @@ import pt.iscte.poo.utils.Direction;
 import pt.iscte.poo.utils.Point2D;
 import pt.iscte.poo.utils.Vector2D;
 
-public class Hero extends Enemy implements ImageTile,Movable,Attackable {
+public class Hero extends Enemy implements ImageTile,Movable,Attackable,Effects {
 	private int armor;
+	private int poison;
 	private ArrayList<Pickable> inventory;
+	EngineExample engine=EngineExample.getInstance();
 
 	public Hero(Point2D position) {
 		super(position,10,1); //10  vida,  1 damage. Como  são os dados default, e sempre que for criado um  herói tem que ser mediante estes mesmos  dados, consideramos que não é necessário dá-los como argumentos.
@@ -29,6 +31,25 @@ public class Hero extends Enemy implements ImageTile,Movable,Attackable {
 	@Override
 	public int getLayer() {
 		return 2;
+	}
+	public void heroEnemy(int index) {
+		Enemy entity = (Enemy)attack(EngineExample.getInstance().roomIndex(index));
+		if (entity.getHealth() <= 0) {	
+			EngineExample.getInstance().addScore(500);
+			if(entity instanceof Thief) {
+				Thief thief=(Thief) entity;
+				GameElement item = (GameElement)thief.getInventory().get(0);
+				item.changePosition(thief.getGamePosition());
+				EngineExample.getInstance().guiAdd(item);
+				EngineExample.getInstance().addToRoom(item);
+			}
+			EngineExample.getInstance().guiRemove(EngineExample.getInstance().roomIndex(index));
+			EngineExample.getInstance().removeFromRoomIndex(index);
+		} else {
+			EngineExample.getInstance().removeFromRoomIndex(index);
+			EngineExample.getInstance().addToRoomIndex(index, entity);
+		}
+
 	}
 	
 	public Point2D keyCode(int keycode) {
@@ -75,7 +96,7 @@ public class Hero extends Enemy implements ImageTile,Movable,Attackable {
 		return false;
 		}
 	
-	public void drop(int i){
+	public void dropSupport(int i){
 		if(inventory.size()>=i) {
 			GameElement item=(GameElement)inventory.get(i);
 			if(item instanceof Sword) {
@@ -83,6 +104,7 @@ public class Hero extends Enemy implements ImageTile,Movable,Attackable {
 			}else if(item instanceof Armor) {
 				this.armor--;
 			}else if(item instanceof HealthPotion) {
+				this.poison=0;
 				if(this.getHealth()<=5) {
 					this.changeHealth(this.getHealth()+5);
 				}else {
@@ -93,8 +115,38 @@ public class Hero extends Enemy implements ImageTile,Movable,Attackable {
 			
 			}
 	}
+	public void drop(int i) {
+		GameElement item = (GameElement) getInventory().get(i);
+		Point2D pos = new Point2D(0, 0);
+		if (EngineExample.getInstance().itemCollision(getGamePosition()) == -1) {
+			pos = (getGamePosition());
+		} else if (EngineExample.getInstance().itemCollision(getGamePosition().plus(new Vector2D(1, 0))) == -1) {
+			pos = (getGamePosition().plus(new Vector2D(1, 0)));
+		} else if (EngineExample.getInstance().itemCollision(getGamePosition().plus(new Vector2D(0, -1))) == -1) {
+			pos = (getGamePosition().plus(new Vector2D(0, -1)));
+		} else if (EngineExample.getInstance().itemCollision(getGamePosition().plus(new Vector2D(-1, 0))) == -1) {
+			pos = (getGamePosition().plus(new Vector2D(-1, 0)));
+		}
+		if (!(item instanceof HealthPotion)) {
+			item.changePosition(pos);
+			EngineExample.getInstance().addToRoom(item);
+			dropSupport(i);
+		} else {
+			EngineExample.getInstance().guiRemove(item);
+			dropSupport(i);
+		}
+		EngineExample.getInstance().hudUpdate();
+	}
 
 	public ArrayList<Pickable> getInventory(){
 		return inventory;
+	}
+	@Override
+	public void setPoison(int a){
+		this.poison=a;
+	}
+	@Override
+	public int getPoison(){
+		return poison;
 	}
 }

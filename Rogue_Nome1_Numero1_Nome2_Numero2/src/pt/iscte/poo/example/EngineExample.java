@@ -14,18 +14,18 @@ public class EngineExample implements Observer {
 
 	public static final int GRID_HEIGHT = 11;
 	public static final int GRID_WIDTH = 10;
+	public static final int numberOfRooms = 4;
 
 	private static EngineExample INSTANCE = null;
 	private ImageMatrixGUI gui = ImageMatrixGUI.getInstance();
 
 	private Hero hero;
 	private GameHud hud;
-	private GameElement item;
 	private List<List<GameElement>> rooms;
-	private List<GameElement> entities;
 	private int turns;
-	private int numbersOfRooms = 4;
 	private int currentRoom;
+	private String PlayerName;
+	private int score;
 
 	public static EngineExample getInstance() {
 		if (INSTANCE == null)
@@ -40,20 +40,21 @@ public class EngineExample implements Observer {
 	}
 
 	public void start() {
-		entities = new ArrayList<>();
+		turns=0;
+		score=0;
+		PlayerName=gui.askUser("What is your UserName?");
 		rooms = new ArrayList<>();
-		for (int i = 0; i != numbersOfRooms; i++) {
+		for (int i = 0; i != numberOfRooms; i++) {
 			rooms.add(i, new Room("room" + i).getList());
 		}
 		addFloor();
-		this.entities = rooms.get(0);
 		currentRoom = 0;
-		for (int i = 0; i != entities.size(); i++) {
-			gui.addImage(entities.get(i));
+		for (int i = 0; i != rooms.get(currentRoom).size(); i++) {
+			gui.addImage(rooms.get(currentRoom).get(i));
 		}
 		startHud();
-		addHero(new Point2D(4, 4));
-		gui.setStatusMessage("ROGUE Starter Package - Turns:" + turns);
+		addHero(new Point2D(1,1));
+		gui.setStatusMessage("ROGUE Starter Package - Turns:" + turns+" - "+PlayerName+":"+score);
 		gui.update();
 	}
 
@@ -67,44 +68,50 @@ public class EngineExample implements Observer {
 
 	private void addHero(Point2D position) {
 		hero = new Hero(position);
-		entities.add(entities.size(), hero);
 		gui.addImage(hero);
 	}
 
 	private void addGreen(Point2D position) {
 		hud = new GameHud(position, "Green");
-		entities.add(entities.size(), hud);
+		rooms.get(currentRoom).add(rooms.get(currentRoom).size(), hud);
 		gui.addImage(hud);
 	}
 
 	private void addBlack(Point2D position) {
 		hud = new GameHud(position, "Black");
-		entities.add(entities.size(), hud);
+		rooms.get(currentRoom).add(rooms.get(currentRoom).size(), hud);
 		gui.addImage(hud);
 	}
 
 	private void charactersUpdate() {
-		for (int i = 0; i != entities.size(); i++) {
-			if (entities.get(i) instanceof Enemy && !(entities.get(i) instanceof Hero)) {
-				Enemy enemy = (Enemy) entities.get(i);
+		for (int i = 0; i != rooms.get(currentRoom).size(); i++) {
+			if (rooms.get(currentRoom).get(i) instanceof Enemy && !(rooms.get(currentRoom).get(i) instanceof Hero)) {
+				Enemy enemy = (Enemy) rooms.get(currentRoom).get(i);
 				Point2D pos = enemy.move(hero.getPosition());
 				int index = enemyCollision(pos);
 				if (index == -1) {
 					enemy.changePosition(pos);
-					entities.remove(i);
-					entities.add(i, enemy);
-				} else {
-					GameElement hero = enemy.attack(entities.get(index));
-					entities.remove(index);
-					entities.add(index, hero);
+					rooms.get(currentRoom).remove(i);
+					rooms.get(currentRoom).add(i, enemy);
+				} else if (index == -2) {
+					enemy.attack(hero);
+					score-=10;
+					if(rooms.get(currentRoom).get(i) instanceof Scorpion) {
+						hero.setPoison(hero.getPoison()+1);
+					}
 				}
 			}
 		}
+		hero.getHit(hero.getPoison());
 		healthUpdate();
 		if (hero.getHealth() <= 0) {
-			// gui.setMessage("You're dead");
-//			gui.removeImage((Hero)entities.get(0));
-//			entities.remove(0);
+			if(gui.askUser("You Died, Want to restart?").equals("y")){
+			gui.clearImages();
+			EngineExample.getInstance().start();
+			}else {
+				gui.dispose();
+				System.exit(0);
+				}
 		}
 	}
 
@@ -114,11 +121,6 @@ public class EngineExample implements Observer {
 
 	@Override
 	public void update(Observed source) {
-		for (int h = 0; h != entities.size(); h++) {
-			if (entities.get(h) instanceof Hero) {
-				this.hero = (Hero) entities.get(h);
-			}
-		}
 
 		int key = ((ImageMatrixGUI) source).keyPressed();
 
@@ -127,54 +129,51 @@ public class EngineExample implements Observer {
 		}
 		if (key == KeyEvent.VK_Q) {
 			if (hero.getInventory().size() >= 1) {
-				heroDrop(0);
+				hero.drop(0);
 			}
 		}
 		if (key == KeyEvent.VK_W) {
 			if (hero.getInventory().size() >= 2) {
-				heroDrop(1);
+				hero.drop(1);
 			}
 		}
 		if (key == KeyEvent.VK_E) {
 			if (hero.getInventory().size() >= 3) {
-				heroDrop(2);
+				hero.drop(2);
 			}
 		}
 		healthUpdate();
-		gui.setStatusMessage("ROGUE Starter Package - Turns:" + turns);
+		gui.setStatusMessage("ROGUE Starter Package - Turns:" + turns+" - "+PlayerName+":"+score);
 		gui.update();
 	}
 
 	public void heroAction(int key) {
-		System.out.println(entities);
 		Point2D pos = hero.keyCode(key);
 		int index = collision(pos);
 		if (index == -1) {
-			hero.changePosition(pos);
+			hero.changePosition(pos);	
+		}else if(index ==  -3) {
+			gui.setStatusMessage("ROGUE Starter Package - Turns:" + turns+" - "+PlayerName+":"+score);
+			if(gui.askUser("You Won with "+score+" points, Want to restart?").equals("y")){
+			gui.clearImages();
+			EngineExample.getInstance().start();
+			}else {
+				gui.dispose();
+				System.exit(0);
+				}
 		}else if(index ==  -2) {
 			return;
-		}else if (entities.get(index) instanceof Enemy) {
-			GameElement entity = hero.attack(entities.get(index));
-			if (entity instanceof Enemy) {
-				Enemy enemy1 = (Enemy) entity;
-				if (enemy1.getHealth() <= 0) {
-					gui.removeImage(entities.get(index));
-					entities.remove(index);
-				} else {
-					entities.remove(index);
-					entities.add(index, entity);
-				}
-			}
-		} else if (entities.get(index) instanceof Pickable) {
+		}else if (rooms.get(currentRoom).get(index) instanceof Enemy) {
+			hero.heroEnemy(index);
+		} else if (rooms.get(currentRoom).get(index) instanceof Pickable) {
 			hero.changePosition(pos);
-			if (hero.pickUp(entities.get(index))) {
+			if (hero.pickUp(rooms.get(currentRoom).get(index))) {
+				gui.removeImage(rooms.get(currentRoom).get(index));
 				hudUpdate();
-				entities.remove(entities.get(index));
-				System.out.println(entities);
-//				gui.removeImage(entities.get(index));
+				rooms.get(currentRoom).remove(rooms.get(currentRoom).get(index));
 			}
-		} else if (entities.get(index) instanceof Door) {
-			Door door = (Door) entities.get(index);
+		} else if (rooms.get(currentRoom).get(index) instanceof Door) {
+			Door door = (Door) rooms.get(currentRoom).get(index);
 			if (door.getId() == null) {
 				roomUpdate(door, index);
 			} else {
@@ -182,8 +181,8 @@ public class EngineExample implements Observer {
 					if (hero.getInventory().get(i) instanceof Key) {
 						Key Dkey = (Key) hero.getInventory().get(i);
 						if (door.getId().equals(Dkey.getId())) {
+							score+=1000;
 							hero.drop(i);
-							gui.removeImage(Dkey);
 							hudUpdate();
 							roomUpdate(door, index);
 							break;
@@ -198,60 +197,34 @@ public class EngineExample implements Observer {
 	}
 
 	public void roomUpdate(Door door, int index) {
-		gui.removeImage(entities.get(index));
-		entities.remove(index);
-		entities.add(new Door(door.getPosition(), door.getRoom(), door.getSpawnPosition()));
-		gui.addImage(entities.get(index));
-		rooms.remove(currentRoom);
-		rooms.add(currentRoom, this.entities);
+		gui.removeImage(rooms.get(currentRoom).get(index));
+		rooms.get(currentRoom).remove(index);
+		rooms.get(currentRoom).add(new Door(door.getPosition(), door.getRoom(), door.getSpawnPosition()));
+		gui.addImage(rooms.get(currentRoom).get(index));
 		gui.clearImages();
 		String[] id = door.getRoom().split("m");
-		this.entities = rooms.get(Integer.parseInt(id[1]));
 		currentRoom = Integer.parseInt(id[1]);
 		addFloor();
-		for (int w = 0; w != entities.size(); w++) {
-			gui.addImage(entities.get(w));
+		for (int w = 0; w != rooms.get(currentRoom).size(); w++) {
+			gui.addImage(rooms.get(currentRoom).get(w));
 		}
 		hero.changePosition(door.getSpawnPosition());
-		entities.add(hero);
+		rooms.get(currentRoom).add(hero);
 		gui.addImage(hero);
 		startHud();
 		hudUpdate();
 		healthUpdate();
 		gui.update();
 	}
-
-	public void heroDrop(int i) {
-		GameElement item = (GameElement) hero.getInventory().get(i);
-		Point2D pos = new Point2D(0, 0);
-		if (itemCollision(hero.getGamePosition()) == -1) {
-			pos = (hero.getGamePosition());
-		} else if (itemCollision(hero.getGamePosition().plus(new Vector2D(1, 0))) == -1) {
-			pos = (hero.getGamePosition().plus(new Vector2D(1, 0)));
-		} else if (itemCollision(hero.getGamePosition().plus(new Vector2D(0, -1))) == -1) {
-			pos = (hero.getGamePosition().plus(new Vector2D(0, -1)));
-		} else if (itemCollision(hero.getGamePosition().plus(new Vector2D(-1, 0))) == -1) {
-			pos = (hero.getGamePosition().plus(new Vector2D(-1, 0)));
-		}
-		if (!(item instanceof HealthPotion)) {
-			item.changePosition(pos);
-			entities.add(item);
-			hero.drop(i);
-		} else {
-			item.changePosition(new Point2D(4, 4));
-			entities.remove(item);
-			gui.removeImage(item);
-			hero.drop(i);
-		}
-		hudUpdate();
-	}
-
 	public int collision(Point2D position) {
 		if(position.getX()>10 ||position.getX()<0 || position.getY()>10 || position.getY()<0) {
 			return -2;
 		}
-		for (int i = 0; i != entities.size(); i++) {
-			if (position.equals(entities.get(i).getGamePosition())) {
+		for (int i = 0; i != rooms.get(currentRoom).size(); i++) {
+			if (position.equals(rooms.get(currentRoom).get(i).getGamePosition())) {
+				if(rooms.get(currentRoom).get(i) instanceof Treasure) {
+					return -3;
+				}
 				return i;
 			}
 		}
@@ -259,8 +232,11 @@ public class EngineExample implements Observer {
 	}
 
 	public int enemyCollision(Point2D position) {
-		for (int i = 0; i != entities.size(); i++) {
-			if (position.equals(entities.get(i).getGamePosition()) && !(entities.get(i) instanceof Pickable)) {
+		if(hero.getGamePosition().equals(position)) {
+			return -2;
+		}
+		for (int i = 0; i != rooms.get(currentRoom).size(); i++) {
+			if (position.equals(rooms.get(currentRoom).get(i).getGamePosition()) && !(rooms.get(currentRoom).get(i) instanceof Pickable)) {
 				return i;
 			}
 		}
@@ -268,9 +244,9 @@ public class EngineExample implements Observer {
 	}
 
 	public int itemCollision(Point2D position) {
-		for (int i = 0; i != entities.size(); i++) {
-			if (!(entities.get(i) instanceof Hero)) {
-				if (position.equals(entities.get(i).getGamePosition())) {
+		for (int i = 0; i != rooms.get(currentRoom).size(); i++) {
+			if (!(rooms.get(currentRoom).get(i) instanceof Hero)) {
+				if (position.equals(rooms.get(currentRoom).get(i).getGamePosition())) {
 					return i;
 				}
 			}
@@ -279,16 +255,9 @@ public class EngineExample implements Observer {
 	}
 
 	public void healthUpdate() {
-		Hero hero = new Hero(new Point2D(-1, -1));
-		for (int h = 0; h != entities.size(); h++) {
-			if (entities.get(h) instanceof Hero) {
-				hero = (Hero) entities.get(h);
-			}
-		}
-		for (int i = 0; i != entities.size(); i++) {
-			;
-			if (entities.get(i) instanceof GameHud) {
-				Point2D pos = entities.get(i).getGamePosition();
+		for (int i = 0; i != rooms.get(currentRoom).size(); i++) {
+			if (rooms.get(currentRoom).get(i) instanceof GameHud) {
+				Point2D pos = rooms.get(currentRoom).get(i).getGamePosition();
 				int health = hero.getHealth();
 				for (int j = 5; j >= (health / 2); j--) {
 					if (j >= 0) {
@@ -312,20 +281,20 @@ public class EngineExample implements Observer {
 	}
 
 	public void healthSuport(int i, Point2D pos, String colour) {
-		gui.removeImage(entities.get(i));
-		entities.remove(i);
+		gui.removeImage(rooms.get(currentRoom).get(i));
+		rooms.get(currentRoom).remove(i);
 		GameHud Color = new GameHud(pos, colour);
-		entities.add(i, Color);
+		rooms.get(currentRoom).add(i, Color);
 		gui.addImage(Color);
 	}
 	
 	public void hudClear() {
 		for(int i=0;i!=3;i++) {
-		for (int j = 0; j != entities.size(); j++) {
-			if (entities.get(j).getGamePosition().equals(new Point2D(i + 7, 10))) {
-				if (!(entities.get(j) instanceof GameHud)) {
-					gui.removeImage(entities.get(j));
-					entities.remove(j);
+		for (int j = 0; j != rooms.get(currentRoom).size(); j++) {
+			if (rooms.get(currentRoom).get(j).getGamePosition().equals(new Point2D(i + 7, 10))) {
+				if (!(rooms.get(currentRoom).get(j) instanceof GameHud)) {
+					gui.removeImage(rooms.get(currentRoom).get(j));
+					rooms.get(currentRoom).remove(j);
 					break;
 					}
 				}
@@ -357,5 +326,29 @@ public class EngineExample implements Observer {
 		addBlack(new Point2D(7, 10));
 		addBlack(new Point2D(8, 10));
 		addBlack(new Point2D(9, 10));
+	}
+	public void guiAdd(GameElement image) {
+		gui.addImage(image);
+	}
+	public void guiRemove(GameElement image) {
+		gui.removeImage(image);
+	}
+	public void addToRoom(GameElement a) {
+		rooms.get(currentRoom).add(a);
+	}
+	public void removeFromRoom(GameElement a) {
+		rooms.get(currentRoom).remove(a);
+	}
+	public void addToRoomIndex(int index,GameElement a) {
+		rooms.get(currentRoom).add(index,a);
+	}
+	public void removeFromRoomIndex(int index) {
+		rooms.get(currentRoom).remove(index);
+	}
+	public GameElement roomIndex(int index) {
+		return rooms.get(currentRoom).get(index);
+	}
+	public void addScore(int score) {
+		this.score+=score;
 	}
 }
