@@ -8,7 +8,6 @@ import pt.iscte.poo.observer.Observed;
 import pt.iscte.poo.observer.Observer;
 import pt.iscte.poo.utils.Point2D;
 import java.awt.event.KeyEvent;
-import pt.iscte.poo.utils.Vector2D;
 
 public class EngineExample implements Observer {
 
@@ -26,6 +25,8 @@ public class EngineExample implements Observer {
 	private int currentRoom;
 	private String PlayerName;
 	private int score;
+	private Door lastDoorSaved;
+	private	Hero heroSaved;
 
 	public static EngineExample getInstance() {
 		if (INSTANCE == null)
@@ -83,7 +84,7 @@ public class EngineExample implements Observer {
 		gui.addImage(hud);
 	}
 
-	private void charactersUpdate() {
+	private void charactersUpdate() { // put in each enemy
 		for (int i = 0; i != rooms.get(currentRoom).size(); i++) {
 			if (rooms.get(currentRoom).get(i) instanceof Enemy && !(rooms.get(currentRoom).get(i) instanceof Hero)) {
 				Enemy enemy = (Enemy) rooms.get(currentRoom).get(i);
@@ -106,10 +107,17 @@ public class EngineExample implements Observer {
 		healthUpdate();
 		if (hero.getHealth() <= 0) {
 			Scoreboard.teste(PlayerName,score);
-			if(gui.askUser("You Died, Want to restart?").equals("y")){
-			gui.clearImages();
-			EngineExample.getInstance().start();
-			}else {
+			if(gui.askUser("You Died, Want to lo?").equals("y")){
+				rooms.remove(currentRoom);
+				rooms.add(currentRoom,new Room("room" + currentRoom).getList());
+				hero=new Hero(new Point2D(4,4));
+				System.out.println(hero.getHealth());
+				System.out.println(heroSaved.getHealth());
+				hero=heroSaved;
+				System.out.println(hero.getHealth());
+				loadSave(lastDoorSaved);
+			}	
+			else {
 				gui.dispose();
 				System.exit(0);
 				}
@@ -127,21 +135,20 @@ public class EngineExample implements Observer {
 
 		if (key == KeyEvent.VK_DOWN || key == KeyEvent.VK_UP || key == KeyEvent.VK_LEFT | key == KeyEvent.VK_RIGHT) {
 			heroAction(key);
+			turns++;
+			charactersUpdate();
 		}
-		if (key == KeyEvent.VK_Q) {
-			if (hero.getInventory().size() >= 1) {
-				hero.drop(0);
-			}
+		if (key == KeyEvent.VK_1 ||key == KeyEvent.VK_2 || key == KeyEvent.VK_3) {
+				hero.drop(key-49);
+		}
+		if (key == KeyEvent.VK_Q) { 
+				hero.use(0);
 		}
 		if (key == KeyEvent.VK_W) {
-			if (hero.getInventory().size() >= 2) {
-				hero.drop(1);
-			}
+				hero.use(1);
 		}
 		if (key == KeyEvent.VK_E) {
-			if (hero.getInventory().size() >= 3) {
-				hero.drop(2);
-			}
+				hero.use(2);
 		}
 		healthUpdate();
 		gui.setStatusMessage("ROGUE Starter Package - Turns:" + turns+" - "+PlayerName+":"+score);
@@ -153,7 +160,8 @@ public class EngineExample implements Observer {
 		int index = collision(pos);
 		if (index == -1) {
 			hero.changePosition(pos);	
-		}else if(index ==  -3) {
+		}	
+		else if(index ==  -3) {
 			gui.setStatusMessage("ROGUE Starter Package - Turns:" + turns+" - "+PlayerName+":"+score);
 			Scoreboard.teste(PlayerName,score);
 			if(gui.askUser("You Won with "+score+" points, Want to restart?").equals("y")){
@@ -173,12 +181,11 @@ public class EngineExample implements Observer {
 		} else if (rooms.get(currentRoom).get(index) instanceof Door) {
 			hero.heroDoor((Door)rooms.get(currentRoom).get(index), index);
 		}
-		charactersUpdate();
-		turns++;
 
 	}
 
 	public void roomUpdate(Door door, int index) {
+		heroSaved=(Hero)hero.clone();
 		gui.removeImage(rooms.get(currentRoom).get(index));
 		rooms.get(currentRoom).remove(index);
 		rooms.get(currentRoom).add(new Door(door.getPosition(), door.getRoom(), door.getSpawnPosition()));
@@ -192,6 +199,20 @@ public class EngineExample implements Observer {
 		}
 		hero.changePosition(door.getSpawnPosition());
 		rooms.get(currentRoom).add(hero);
+		gui.addImage(hero);
+		startHud();
+		hudUpdate();
+		healthUpdate();
+		gui.update();
+	}
+	public void loadSave(Door door) {
+		gui.clearImages();
+		String[] id = door.getRoom().split("m");
+		currentRoom = Integer.parseInt(id[1]);
+		addFloor();
+		for (int w = 0; w != rooms.get(currentRoom).size(); w++) {
+			gui.addImage(rooms.get(currentRoom).get(w));
+		}
 		gui.addImage(hero);
 		startHud();
 		hudUpdate();
@@ -332,5 +353,8 @@ public class EngineExample implements Observer {
 	}
 	public void addScore(int score) {
 		this.score+=score;
+	}
+	public void setSaveDoor(Door door) {
+		lastDoorSaved=door;
 	}
 }

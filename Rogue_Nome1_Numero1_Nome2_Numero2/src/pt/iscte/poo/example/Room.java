@@ -45,7 +45,7 @@ public class Room {
 	}
 
 
-    public  void Create(String[] chars) {
+    public  void Create(String[] chars) { // switch to cases
         if(chars[0].equals("Bat")) {
             addBat(new Point2D(Integer.parseInt(chars[1]),Integer.parseInt(chars[2])));
         }else if(chars[0].equals("Skeleton")) {

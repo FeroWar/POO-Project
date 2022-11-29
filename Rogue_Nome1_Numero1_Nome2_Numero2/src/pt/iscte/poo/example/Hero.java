@@ -6,7 +6,7 @@ import pt.iscte.poo.utils.Direction;
 import pt.iscte.poo.utils.Point2D;
 import pt.iscte.poo.utils.Vector2D;
 
-public class Hero extends Enemy implements ImageTile,Movable,Attackable,Effects {
+public class Hero extends Enemy implements ImageTile,Movable,Attackable,Effects,Cloneable {
 	private int armor;
 	private int poison;
 	private ArrayList<Pickable> inventory;
@@ -33,6 +33,7 @@ public class Hero extends Enemy implements ImageTile,Movable,Attackable,Effects 
 		return 2;
 	}
 	public void heroDoor(Door door,int index) {
+		engine.setSaveDoor(door);
 		if (door.getId() == null) {
 			engine.roomUpdate(door, index);
 		} else {
@@ -41,7 +42,8 @@ public class Hero extends Enemy implements ImageTile,Movable,Attackable,Effects 
 					Key Dkey = (Key) inventory.get(i);
 					if (door.getId().equals(Dkey.getId())) {
 						engine.addScore(1000);
-						drop(i);
+						engine.guiRemove((GameElement)inventory.get(i));
+						inventory.remove(i);
 						engine.hudUpdate();
 						engine.roomUpdate(door, index);
 						break;
@@ -128,19 +130,14 @@ public class Hero extends Enemy implements ImageTile,Movable,Attackable,Effects 
 				this.changeDamage(getDamage()/2);
 			}else if(item instanceof Armor) {
 				this.armor--;
-			}else if(item instanceof HealthPotion) {
-				this.poison=0;
-				if(this.getHealth()<=5) {
-					this.changeHealth(this.getHealth()+5);
-				}else {
-					this.changeHealth(10);
-				}
 			}
 			inventory.remove(i);
 			
 			}
 	}
+
 	public void drop(int i) {
+		if (inventory.size() > i) {
 		GameElement item = (GameElement) getInventory().get(i);
 		Point2D pos = new Point2D(0, 0);
 		if (engine.itemCollision(getGamePosition()) == -1) {
@@ -152,15 +149,26 @@ public class Hero extends Enemy implements ImageTile,Movable,Attackable,Effects 
 		} else if (engine.itemCollision(getGamePosition().plus(new Vector2D(-1, 0))) == -1) {
 			pos = (getGamePosition().plus(new Vector2D(-1, 0)));
 		}
-		if (!(item instanceof HealthPotion)) {
 			item.changePosition(pos);
 			engine.addToRoom(item);
 			dropSupport(i);
-		} else {
+		engine.hudUpdate();
+		}
+	}
+	public void use(int i) {
+		if (inventory.size() > i) {
+			if(inventory.get(i) instanceof HealthPotion) {
+			GameElement item = (GameElement) getInventory().get(i);
 			engine.guiRemove(item);
 			dropSupport(i);
-		}
-		engine.hudUpdate();
+			engine.hudUpdate();
+			if(this.getHealth()<=5) {
+				this.changeHealth(this.getHealth()+5);
+			}else {
+				this.changeHealth(10);
+			}
+			}
+			}
 	}
 
 	public ArrayList<Pickable> getInventory(){
@@ -174,4 +182,10 @@ public class Hero extends Enemy implements ImageTile,Movable,Attackable,Effects 
 	public int getPoison(){
 		return poison;
 	}
+	public Hero clone(){
+		try{  
+		return super.clone();  
+		}  catch(CloneNotSupportedException e){
+			
+		}
 }

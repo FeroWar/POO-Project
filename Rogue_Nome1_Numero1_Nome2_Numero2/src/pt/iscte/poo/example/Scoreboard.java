@@ -21,22 +21,14 @@ public class Scoreboard {
 				}
 			}
 			for (int i = 0; i != 5; i++) {
-				System.out.println(file[i]);
-			}
-			for (int i = 0; i != 5; i++) {
 				if (file[i].equals("empty")) {
 					file[i] = new String(name + ":" + score);
-					System.out.println(i);
-					System.out.println(file[i]);
 					break;
 				} else {
 					String s = file[i];
 					String[] split = s.split(":");
 					if (split.length>=2 && Integer.parseInt(split[1]) < score) {
 						for (int j = i; j != 4; j++) {
-							System.out.println(j);
-							System.out.println(file[j + 1]);
-							System.out.println(file[j]);
 							file[4-j] = file[3-j];
 						}
 						file[i] = new String(name + ":" + score);
