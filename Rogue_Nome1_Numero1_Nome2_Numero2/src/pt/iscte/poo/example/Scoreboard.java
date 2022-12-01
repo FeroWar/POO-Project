@@ -1,14 +1,14 @@
 package pt.iscte.poo.example;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Scanner;
 
 public class Scoreboard {
-	static void teste(String name, int score) {
+	static void scoreboard() {
+		String name=EngineExample.getInstance().getPlayerName();
+		int score=EngineExample.getInstance().getScore();
 		try {
 			File scoreboard=new File("scoreboard.txt");
 			Scanner sc = new Scanner(scoreboard);

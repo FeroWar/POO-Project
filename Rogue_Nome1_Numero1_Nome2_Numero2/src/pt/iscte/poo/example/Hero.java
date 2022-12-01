@@ -1,5 +1,6 @@
 package pt.iscte.poo.example;
 
+import java.awt.List;
 import java.util.ArrayList;
 import pt.iscte.poo.gui.ImageTile;
 import pt.iscte.poo.utils.Direction;
@@ -28,24 +29,53 @@ public class Hero extends Enemy implements ImageTile,Movable,Attackable,Effects,
 		return getGamePosition();
 	}
 
-	@Override
 	public int getLayer() {
 		return 2;
 	}
+	
+	public void action(int key) {
+		Point2D pos = keyCode(key);
+		int index = collision(pos);
+		if (index == -1) {
+			changePosition(pos);
+		} else if (index == -3) {
+			engine.getGui().setStatusMessage("ROGUE Starter Package - Turns:" + engine.getTurn() + " - " + engine.getPlayerName() + ":" + engine.getScore());
+			Scoreboard.scoreboard();
+			engine.addScore(5000);
+			if (engine.getGui().askUser("You Won with " + engine.getScore() + " points, Want to restart?").equals("y")) {
+				engine.getGui().clearImages();
+				EngineExample.getInstance().start();
+			} else {
+				engine.getGui().dispose();
+				System.exit(0);
+			}
+		} else if (index == -2) {
+			return;
+		} else if (engine.getCurrentRoom().get(index) instanceof Enemy) {
+			heroEnemy((Enemy) engine.getCurrentRoom().get(index), index);
+		} else if (engine.getCurrentRoom().get(index) instanceof Pickable) {
+			changePosition(pos);
+			heroPickable(engine.getCurrentRoom().get(index));
+		} else if (engine.getCurrentRoom().get(index) instanceof Door) {
+			heroDoor((Door) engine.getCurrentRoom().get(index), index);
+		}
+
+	}
+	
 	public void heroDoor(Door door,int index) {
 		engine.setSaveDoor(door);
 		if (door.getId() == null) {
-			engine.roomUpdate(door, index);
+			new Room().roomUpdate(door, index);
 		} else {
 			for (int i = 0; i != inventory.size(); i++) {
 				if (inventory.get(i) instanceof Key) {
 					Key Dkey = (Key) inventory.get(i);
 					if (door.getId().equals(Dkey.getId())) {
 						engine.addScore(1000);
-						engine.guiRemove((GameElement)inventory.get(i));
+						engine.getGui().removeImage((GameElement)inventory.get(i));
 						inventory.remove(i);
-						engine.hudUpdate();
-						engine.roomUpdate(door, index);
+						engine.getHud().hudUpdate();
+						new Room().roomUpdate(door, index);
 						break;
 					}
 				}
@@ -54,9 +84,9 @@ public class Hero extends Enemy implements ImageTile,Movable,Attackable,Effects,
 	}
 	public void heroPickable(GameElement a) {
 		if (pickUp(a)) {
-			engine.guiRemove(a);
-			engine.hudUpdate();
-			engine.removeFromRoom(a);
+			engine.getGui().removeImage(a);
+			engine.getHud().hudUpdate();
+			engine.getCurrentRoom().remove(a);
 		}
 	}
 	public void heroEnemy(Enemy entity,int index) {
@@ -67,18 +97,41 @@ public class Hero extends Enemy implements ImageTile,Movable,Attackable,Effects,
 				Thief thief=(Thief) entity;
 				GameElement item = (GameElement)thief.getInventory().get(0);
 				item.changePosition(thief.getGamePosition());
-				engine.guiAdd(item);
-				engine.addToRoom(item);
+				engine.getGui().addImage(item);
+				engine.getCurrentRoom().add(item);
 			}
-			engine.guiRemove(engine.roomIndex(index));
-			engine.removeFromRoom(entity);
+			engine.getGui().removeImage(engine.getCurrentRoom().get(index));
+			engine.getCurrentRoom().remove(entity);
 		} else {
-			engine.removeFromRoom(entity);
-			engine.addToRoomIndex(index, entity);
+			engine.getCurrentRoom().remove(entity);
+			engine.getCurrentRoom().add(index, entity);
 		}
 
 	}
-	
+	public int collision(Point2D position) {
+		if (position.getX() > 10 || position.getX() < 0 || position.getY() > 10 || position.getY() < 0) {
+			return -2;
+		}
+		for (int i = 0; i != engine.getCurrentRoom().size(); i++) {
+			if (position.equals(engine.getCurrentRoom().get(i).getGamePosition())) {
+				if (engine.getCurrentRoom().get(i) instanceof Treasure) {
+					return -3;
+				}
+				return i;
+			}
+		}
+		return -1;
+	}
+	public int itemCollision(Point2D position) {
+		for (int i = 0; i != engine.getCurrentRoom().size(); i++) {
+			if (!(engine.getCurrentRoom().get(i) instanceof Hero)) {
+				if (position.equals(engine.getCurrentRoom().get(i).getGamePosition())) {
+					return i;
+				}
+			}
+		}
+		return -1;
+	}
 	public Point2D keyCode(int keycode) {
 		Direction Direction1 = Direction.directionFor(keycode);
 		Vector2D Vector = Direction1.asVector();
@@ -97,6 +150,7 @@ public class Hero extends Enemy implements ImageTile,Movable,Attackable,Effects,
 		else {
 			changeHealth(getHealth()-damage);
 		}
+		engine.getHud().healthUpdate();
 	}
 	@Override
 	public GameElement attack(GameElement enemy) {
@@ -140,32 +194,34 @@ public class Hero extends Enemy implements ImageTile,Movable,Attackable,Effects,
 		if (inventory.size() > i) {
 		GameElement item = (GameElement) getInventory().get(i);
 		Point2D pos = new Point2D(0, 0);
-		if (engine.itemCollision(getGamePosition()) == -1) {
+		if (itemCollision(getGamePosition()) == -1) {
 			pos = (getGamePosition());
-		} else if (engine.itemCollision(getGamePosition().plus(new Vector2D(1, 0))) == -1) {
+		} else if (itemCollision(getGamePosition().plus(new Vector2D(1, 0))) == -1) {
 			pos = (getGamePosition().plus(new Vector2D(1, 0)));
-		} else if (engine.itemCollision(getGamePosition().plus(new Vector2D(0, -1))) == -1) {
+		} else if (itemCollision(getGamePosition().plus(new Vector2D(0, -1))) == -1) {
 			pos = (getGamePosition().plus(new Vector2D(0, -1)));
-		} else if (engine.itemCollision(getGamePosition().plus(new Vector2D(-1, 0))) == -1) {
+		} else if (itemCollision(getGamePosition().plus(new Vector2D(-1, 0))) == -1) {
 			pos = (getGamePosition().plus(new Vector2D(-1, 0)));
 		}
 			item.changePosition(pos);
-			engine.addToRoom(item);
+			engine.getCurrentRoom().add(item);
 			dropSupport(i);
-		engine.hudUpdate();
+			engine.getHud().hudUpdate();
 		}
 	}
 	public void use(int i) {
 		if (inventory.size() > i) {
 			if(inventory.get(i) instanceof HealthPotion) {
 			GameElement item = (GameElement) getInventory().get(i);
-			engine.guiRemove(item);
+			engine.getGui().removeImage(item);
 			dropSupport(i);
-			engine.hudUpdate();
+			engine.getHud().hudUpdate();
 			if(this.getHealth()<=5) {
 				this.changeHealth(this.getHealth()+5);
+				engine.getHud().healthUpdate();
 			}else {
 				this.changeHealth(10);
+				engine.getHud().healthUpdate();
 			}
 			}
 			}
@@ -182,10 +238,36 @@ public class Hero extends Enemy implements ImageTile,Movable,Attackable,Effects,
 	public int getPoison(){
 		return poison;
 	}
-	public Hero clone(){
-		try{  
-		return super.clone();  
-		}  catch(CloneNotSupportedException e){
-			
+	public Object clone(){
+		try {
+		return super.clone();
+		}catch(CloneNotSupportedException e) {
+			return null;
 		}
+	}
+	public void setInventory( ArrayList<Pickable> a) {
+		inventory=a;
+		
+	}
+	public void zeroHp() {
+		if(engine.getGui().askUser("You Died, Want to load last save?").equals("y")){
+			if(engine.getSavedHero()!=null) {
+			new Room().loadSave();
+		}else {
+			if(engine.getGui().askUser("There is no save, would you like to restart?").equals("y")){
+				engine.getGui().dispose();
+				engine.start();
+			}else {
+				Scoreboard.scoreboard();
+				engine.getGui().dispose();
+				System.exit(0);
+			}
+		}
+		}
+		else {
+			Scoreboard.scoreboard();
+			engine.getGui().dispose();
+			System.exit(0);
+			}
+	}
 }

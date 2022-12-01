@@ -5,20 +5,16 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-
-import pt.iscte.poo.gui.ImageMatrixGUI;
 import pt.iscte.poo.utils.Point2D;
 
 public class Room {
 	private List<GameElement> roomElement;
-	private ImageMatrixGUI gui = ImageMatrixGUI.getInstance();
-	private Hero hero;
 	private Door door;
 	private Wall wall;
-	private GameHud hud;
 	private GameElement enemy;
 	private GameElement item;
 	private GameElement treasure;
+	EngineExample engine=EngineExample.getInstance();
 
 	public Room() {
 		roomElement = new ArrayList<GameElement>();
@@ -46,35 +42,48 @@ public class Room {
 
 
     public  void Create(String[] chars) { // switch to cases
-        if(chars[0].equals("Bat")) {
+    	 String type=chars[0];
+    	switch (type) {
+    	  case "Bat":
             addBat(new Point2D(Integer.parseInt(chars[1]),Integer.parseInt(chars[2])));
-        }else if(chars[0].equals("Skeleton")) {
-            addSkeleton(new Point2D(Integer.parseInt(chars[1]),Integer.parseInt(chars[2])));
-        }else if(chars[0].equals("Thug")) {
-            addThug(new Point2D(Integer.parseInt(chars[1]),Integer.parseInt(chars[2])));
-        }else if(chars[0].equals("Thief")) {
-            addThief(new Point2D(Integer.parseInt(chars[1]),Integer.parseInt(chars[2])));
-        }else if(chars[0].equals("Scorpion")) {
-            addScorpion(new Point2D(Integer.parseInt(chars[1]),Integer.parseInt(chars[2])));
-        }else if(chars[0].equals("Sword")) {
-            addSword(new Point2D(Integer.parseInt(chars[1]),Integer.parseInt(chars[2])));
-        }else if(chars[0].equals("Armor")) {
-            addArmor(new Point2D(Integer.parseInt(chars[1]),Integer.parseInt(chars[2])));
-        }else if(chars[0].equals("HealingPotion")) {
-            addHealthPotion(new Point2D(Integer.parseInt(chars[1]),Integer.parseInt(chars[2])));
-        }else if(chars[0].equals("Key")) {
-            addKey(new Point2D(Integer.parseInt(chars[1]),Integer.parseInt(chars[2])),chars[3]);
-		} else if (chars[0].equals("Door")) {
-			if (chars.length >= 7) {
+            break;
+    	  case "Skeleton":
+    		  addSkeleton(new Point2D(Integer.parseInt(chars[1]),Integer.parseInt(chars[2])));
+              break;
+    	  case "Thug":
+    		  addThug(new Point2D(Integer.parseInt(chars[1]),Integer.parseInt(chars[2])));
+              break;
+    	  case "Thief":
+    		  addThief(new Point2D(Integer.parseInt(chars[1]),Integer.parseInt(chars[2])));
+              break;
+    	  case "Scorpion":
+    	  		addScorpion(new Point2D(Integer.parseInt(chars[1]),Integer.parseInt(chars[2])));
+              break;
+    	  case "Sword":
+    		  addSword(new Point2D(Integer.parseInt(chars[1]),Integer.parseInt(chars[2])));
+            break;
+    	  case "Armor":
+    		  addArmor(new Point2D(Integer.parseInt(chars[1]),Integer.parseInt(chars[2])));
+            break;
+    	  case "HealingPotion":
+    		  addHealthPotion(new Point2D(Integer.parseInt(chars[1]),Integer.parseInt(chars[2])));
+            break;
+    	  case "Key":
+    		  addKey(new Point2D(Integer.parseInt(chars[1]),Integer.parseInt(chars[2])),chars[3]);
+            break;
+    	  case "Door":
+  			if (chars.length >= 7) {
 				addDoor(new Point2D(Integer.parseInt(chars[1]), Integer.parseInt(chars[2])), chars[3],
 						new Point2D(Integer.parseInt(chars[4]), Integer.parseInt(chars[5])), chars[6]);
 			} else {
 				addDoorOpen(new Point2D(Integer.parseInt(chars[1]), Integer.parseInt(chars[2])), chars[3],
 						new Point2D(Integer.parseInt(chars[4]), Integer.parseInt(chars[5])));
 			}
-    }else if(chars[0].equals("Treasure")) {
-    	addTreasure(new Point2D(Integer.parseInt(chars[1]),Integer.parseInt(chars[2])));
-    }
+            break;
+    	  case "Treasure":
+    		  addTreasure(new Point2D(Integer.parseInt(chars[1]),Integer.parseInt(chars[2])));
+            break;
+    	}
     }
 
 	public List<GameElement> getList() {
@@ -84,22 +93,6 @@ public class Room {
 	public void changeList(List<GameElement> a) {
 		this.roomElement = a;
 	}
-
-	private void addGreen(Point2D position) {
-		hud = new GameHud(position, "Green");
-		roomElement.add(hud);
-	}
-
-	private void addRed(Point2D position) {
-		hud = new GameHud(position, "Red");
-		roomElement.add(hud);
-	}
-
-	private void addRedGreen(Point2D position) {
-		hud = new GameHud(position, "RedGreen");
-		roomElement.add(hud);
-	}
-
 	private void addWall(Point2D position) {
 		wall = new Wall(position);
 		roomElement.add(wall);
@@ -154,5 +147,41 @@ public class Room {
 	private void addTreasure(Point2D position) {
 		treasure = new Treasure(position);
 		roomElement.add(treasure);
+	}
+	
+	public void roomUpdate(Door door, int index) {
+		engine.getGui().removeImage(engine.getCurrentRoom().get(index));
+		engine.getCurrentRoom().remove(index);
+		engine.getCurrentRoom().add(new Door(door.getPosition(), door.getRoom(), door.getSpawnPosition()));
+		engine.getGui().addImage(engine.getCurrentRoom().get(index));
+		loadSuport(door);
+		engine.getHero().changePosition(door.getSpawnPosition());
+		engine.setSavedHero((Hero) engine.getHero().clone());
+		engine.setSavedInventory((ArrayList<Pickable>) engine.getHero().getInventory().clone());
+		engine.setSavedScore(engine.getScore());
+		engine.setSavedTurns(engine.getTurn());
+	}
+	public void loadSave() {
+		engine.removeRoom(engine.getRoomNumber());
+		engine.addRoom(engine.getRoomNumber(), new Room("room" + engine.getRoomNumber()).getList());
+		engine.setHero((Hero) engine.getSavedHero().clone());
+		engine.getHero().setInventory((ArrayList<Pickable>) engine.getSavedInventory());//.clone()
+		engine.setScore(engine.getSavedScore());
+		engine.setTurns(engine.getSavedTurns());
+		loadSuport(engine.getSavedDoor());
+	}
+	public void loadSuport(Door door) {
+		engine.getGui().clearImages();
+		String[] id = door.getRoom().split("m");
+		engine.setCurrentRoom(Integer.parseInt(id[1]));
+		engine.addFloor();
+		for (int w = 0; w != engine.getCurrentRoom().size(); w++) {
+			engine.getGui().addImage(engine.getCurrentRoom().get(w));
+		}
+		engine.getGui().addImage(engine.getHero());
+		engine.startHud();
+		engine.getHud().hudUpdate();
+		engine.getHud().healthUpdate();
+		engine.getGui().update();
 	}
 }

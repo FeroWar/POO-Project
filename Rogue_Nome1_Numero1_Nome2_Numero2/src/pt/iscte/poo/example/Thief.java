@@ -50,7 +50,7 @@ public class Thief extends Enemy implements ImageTile, Movable, Attackable{
 			int i=(int)Math.random()*3;
 			if(hero.getInventory().size()!=0){
 			inventory.add(hero.getInventory().get(i));
-			EngineExample.getInstance().guiRemove((GameElement)hero.getInventory().get(i));
+			EngineExample.getInstance().getGui().removeImage((GameElement)hero.getInventory().get(i));
 			hero.drop(i);
 			}
 			GameElement exit = hero;
