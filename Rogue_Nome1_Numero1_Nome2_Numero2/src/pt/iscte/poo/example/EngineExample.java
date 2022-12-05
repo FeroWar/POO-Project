@@ -26,12 +26,8 @@ public class EngineExample implements Observer {
 	private String playerName;
 	private int score;
 
-	private Door lastDoorSaved;
-	private Hero heroSaved;
-	private ArrayList<Pickable> heroInventorySaved;
-	private int scoreSaved;
-	private int turnsSaved;
-
+	private Saves save;
+	
 	public static EngineExample getInstance() {
 		if (INSTANCE == null)
 			INSTANCE = new EngineExample();
@@ -47,6 +43,7 @@ public class EngineExample implements Observer {
 	public void start() {
 		turns = 0;
 		score = 0;
+		save=new Saves();
 		playerName = gui.askUser("What is your UserName?");
 		rooms = new ArrayList<>();
 		for (int i = 0; i != NUMBER_OF_ROOMS; i++) {
@@ -147,27 +144,6 @@ public class EngineExample implements Observer {
 	public void addScore(int score) {
 		this.score += score;
 	}
-	public void setSaveDoor(Door door) {
-		lastDoorSaved = door;
-	}
-	public void setSavedHero(Hero hero) {
-		heroSaved=hero;
-	}
-	public void setSavedInventory(ArrayList<Pickable> list) {
-		heroInventorySaved=list;
-	}
-	public void setSavedTurns(int i) {
-		turnsSaved=i;
-	}
-	public void setSavedScore(int i) {
-		scoreSaved=i;
-	}
-	public Hero getSavedHero() {
-		return heroSaved;
-	}
-	public List<Pickable> getSavedInventory() {
-		return heroInventorySaved;
-	}
 	public Hero getHero() {
 		return hero;
 	}
@@ -189,19 +165,13 @@ public class EngineExample implements Observer {
 	public void setTurns(int i) {
 		turns=i;
 	}
-	public int getSavedScore() {
-		return scoreSaved;
-	}
-	public int getSavedTurns() {
-		return turnsSaved;
-	}
 	public void setCurrentRoom(int i) {
 		currentRoom=i;
 	}
 	public GameHud getHud() {
 		return hud;
 	}
-	public Door getSavedDoor() {
-		return lastDoorSaved;
+	public Saves getSave() {
+		return save;
 	}
 }

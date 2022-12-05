@@ -154,26 +154,37 @@ public class Room {
 		engine.getCurrentRoom().remove(index);
 		engine.getCurrentRoom().add(new Door(door.getPosition(), door.getRoom(), door.getSpawnPosition()));
 		engine.getGui().addImage(engine.getCurrentRoom().get(index));
-		loadSuport(door);
-		engine.getHero().changePosition(door.getSpawnPosition());
-		engine.setSavedHero((Hero) engine.getHero().clone());
-		engine.setSavedInventory((ArrayList<Pickable>) engine.getHero().getInventory().clone());
-		engine.setSavedScore(engine.getScore());
-		engine.setSavedTurns(engine.getTurn());
-	}
-	public void loadSave() {
-		engine.removeRoom(engine.getRoomNumber());
-		engine.addRoom(engine.getRoomNumber(), new Room("room" + engine.getRoomNumber()).getList());
-		engine.setHero((Hero) engine.getSavedHero().clone());
-		engine.getHero().setInventory((ArrayList<Pickable>) engine.getSavedInventory());//.clone()
-		engine.setScore(engine.getSavedScore());
-		engine.setTurns(engine.getSavedTurns());
-		loadSuport(engine.getSavedDoor());
-	}
-	public void loadSuport(Door door) {
 		engine.getGui().clearImages();
 		String[] id = door.getRoom().split("m");
 		engine.setCurrentRoom(Integer.parseInt(id[1]));
+		engine.addFloor();
+		for (int w = 0; w != engine.getCurrentRoom().size(); w++) {
+			engine.getGui().addImage(engine.getCurrentRoom().get(w));
+		}
+		engine.getGui().addImage(engine.getHero());
+		engine.startHud();
+		engine.getHud().hudUpdate();
+		engine.getHud().healthUpdate();
+		engine.getGui().update();
+		engine.getHero().changePosition(door.getSpawnPosition());
+		List<GameElement> list=new ArrayList<GameElement>();
+		for(int i=0;i != engine.getCurrentRoom().size();i++) {
+			list.add(i,(GameElement)engine.getCurrentRoom().get(i).clone());
+		}
+		engine.getSave().setSavedRoom(list);
+		engine.getSave().setSavedHero((Hero) engine.getHero().clone());
+		engine.getSave().setSavedInventory((ArrayList<Pickable>) engine.getHero().getInventory().clone());
+		engine.getSave().setSavedScore(engine.getScore());
+		engine.getSave().setSavedTurns(engine.getTurn());
+	}
+	public void loadSave() {
+		engine.removeRoom(engine.getRoomNumber());
+		engine.addRoom(engine.getRoomNumber(),engine.getSave().getSavedRoom());
+		engine.setHero((Hero) engine.getSave().getSavedHero().clone());
+		engine.getHero().setInventory((ArrayList<Pickable>) engine.getSave().getSavedInventory());
+		engine.setScore(engine.getSave().getSavedScore());
+		engine.setTurns(engine.getSave().getSavedTurns());
+		engine.getGui().clearImages();
 		engine.addFloor();
 		for (int w = 0; w != engine.getCurrentRoom().size(); w++) {
 			engine.getGui().addImage(engine.getCurrentRoom().get(w));

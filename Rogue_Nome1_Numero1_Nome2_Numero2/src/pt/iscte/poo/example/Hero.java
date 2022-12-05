@@ -1,6 +1,5 @@
 package pt.iscte.poo.example;
 
-import java.awt.List;
 import java.util.ArrayList;
 import pt.iscte.poo.gui.ImageTile;
 import pt.iscte.poo.utils.Direction;
@@ -63,7 +62,6 @@ public class Hero extends Enemy implements ImageTile,Movable,Attackable,Effects,
 	}
 	
 	public void heroDoor(Door door,int index) {
-		engine.setSaveDoor(door);
 		if (door.getId() == null) {
 			new Room().roomUpdate(door, index);
 		} else {
@@ -238,20 +236,13 @@ public class Hero extends Enemy implements ImageTile,Movable,Attackable,Effects,
 	public int getPoison(){
 		return poison;
 	}
-	public Object clone(){
-		try {
-		return super.clone();
-		}catch(CloneNotSupportedException e) {
-			return null;
-		}
-	}
 	public void setInventory( ArrayList<Pickable> a) {
 		inventory=a;
 		
 	}
 	public void zeroHp() {
 		if(engine.getGui().askUser("You Died, Want to load last save?").equals("y")){
-			if(engine.getSavedHero()!=null) {
+			if(engine.getSave().getSavedHero()!=null) {
 			new Room().loadSave();
 		}else {
 			if(engine.getGui().askUser("There is no save, would you like to restart?").equals("y")){
