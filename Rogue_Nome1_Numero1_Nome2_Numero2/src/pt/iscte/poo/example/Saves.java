@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Saves{
+	EngineExample engine=EngineExample.getInstance();
 	private List<GameElement> room;
 	private Hero heroSaved;
 	private List<Pickable> heroInventorySaved;
@@ -18,32 +19,24 @@ public class Saves{
 		scoreSaved=0;
 		turnsSaved=0;
 	}
-	public void setSavedRoom(List<GameElement> list) {
-		room=list;
+	public void setSave() {
+		room=engine.getCurrentRoom();
+		heroSaved=engine.getHero();
+		heroInventorySaved=engine.getHero().getInventory();
+		scoreSaved=engine.getScore();
+		turnsSaved=engine.getTurn();
 	}
 	public List<GameElement> getSavedRoom() {
 		return room;
 	}
-	public void setSavedHero(Hero a) {
-		heroSaved=a;
-	}
 	public Hero getSavedHero() {
 		return heroSaved;
-	}
-	public void setSavedInventory(List<Pickable> list) {
-		heroInventorySaved=list;
 	}
 	public List<Pickable> getSavedInventory() {
 		return heroInventorySaved;
 	}
-	public void setSavedScore(int a) {
-		scoreSaved=a;
-	}
 	public int getSavedScore() {
 		return scoreSaved;
-	}
-	public void setSavedTurns(int a) {
-		turnsSaved=a;
 	}
 	public int getSavedTurns() {
 		return turnsSaved;

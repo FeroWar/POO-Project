@@ -79,6 +79,7 @@ public class Hero extends Enemy implements ImageTile,Movable,Attackable,Effects,
 				}
 			}
 		}
+		engine.getSave().setSave();
 	}
 	public void heroPickable(GameElement a) {
 		if (pickUp(a)) {
@@ -241,24 +242,40 @@ public class Hero extends Enemy implements ImageTile,Movable,Attackable,Effects,
 		
 	}
 	public void zeroHp() {
-		if(engine.getGui().askUser("You Died, Want to load last save?").equals("y")){
-			if(engine.getSave().getSavedHero()!=null) {
-			new Room().loadSave();
-		}else {
-			if(engine.getGui().askUser("There is no save, would you like to restart?").equals("y")){
-				engine.getGui().dispose();
-				engine.start();
-			}else {
-				Scoreboard.scoreboard();
-				engine.getGui().dispose();
-				System.exit(0);
+		String response1=engine.getGui().askUser("You Died, Want to load last save?");
+		while(!(response1.equals("yes") || response1.equals("no"))) {
+			response1=engine.getGui().askUser("You Died, Want to load last save?");
+		}
+		if (response1.equals("yes")) {
+			if (engine.getSave().getSavedTurns() != 0) {
+				new Room().loadSave();
+			} else {
+				String response2=engine.getGui().askUser("There is no saved game, would you like to restart?");
+				while(!(response2.equals("yes") || response2.equals("no"))) {
+					response2=engine.getGui().askUser("There is no saved game, would you like to restart?");
+				}
+				if (response2.equals("yes")) {
+					engine.getGui().clearImages();
+					engine.start();
+				} else {
+					Scoreboard.scoreboard();
+					engine.getGui().dispose();
+					System.exit(0);
+				}
 			}
-		}
-		}
-		else {
+		} else {
+			String response2=engine.getGui().askUser("Would you like to restart?");
+			while(!(response2.equals("yes") || response2.equals("no"))) {
+				response2=engine.getGui().askUser("Would you like to restart?");
+			}
+			if (response2.equals("yes")) {
+			engine.getGui().clearImages();
+			engine.start();
+			} else {
 			Scoreboard.scoreboard();
 			engine.getGui().dispose();
 			System.exit(0);
-			}
+		}
+	}
 	}
 }

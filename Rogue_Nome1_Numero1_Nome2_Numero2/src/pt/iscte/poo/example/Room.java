@@ -171,11 +171,6 @@ public class Room {
 		for(int i=0;i != engine.getCurrentRoom().size();i++) {
 			list.add(i,(GameElement)engine.getCurrentRoom().get(i).clone());
 		}
-		engine.getSave().setSavedRoom(list);
-		engine.getSave().setSavedHero((Hero) engine.getHero().clone());
-		engine.getSave().setSavedInventory((ArrayList<Pickable>) engine.getHero().getInventory().clone());
-		engine.getSave().setSavedScore(engine.getScore());
-		engine.getSave().setSavedTurns(engine.getTurn());
 	}
 	public void loadSave() {
 		engine.removeRoom(engine.getRoomNumber());

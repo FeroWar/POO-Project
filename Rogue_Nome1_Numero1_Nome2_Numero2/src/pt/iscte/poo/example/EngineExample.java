@@ -44,11 +44,15 @@ public class EngineExample implements Observer {
 		turns = 0;
 		score = 0;
 		save=new Saves();
-		playerName = gui.askUser("What is your UserName?");
+		playerName=gui.askUser("What is your NickName?");
+		while(playerName.isEmpty()) {
+			playerName=gui.askUser("What is your NickName?");
+		}
 		rooms = new ArrayList<>();
 		for (int i = 0; i != NUMBER_OF_ROOMS; i++) {
 			rooms.add(i, new Room("room" + i).getList());
 		}
+		gui.go();
 		addFloor();
 		currentRoom = 0;
 		for (int i = 0; i != rooms.get(currentRoom).size(); i++) {
@@ -58,6 +62,7 @@ public class EngineExample implements Observer {
 		addHero(new Point2D(1, 1));
 		gui.setStatusMessage("ROGUE Starter Package - Turns:" + turns + " - " + playerName + ":" + score);
 		gui.update();
+		save.setSave();
 	}
 
 	public void addFloor() {
